@@ -7,11 +7,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 final Auth auth = Auth();
 
-class Auth {
+class Auth { // 계정 정보를 담는 클래스
   final FirebaseAuth auth = FirebaseAuth.instance;
-  UserCredential? userCredential;
+  UserCredential? userCredential; // 계정 정보를 담는 객체
 
-  Future<void> signInWithEmailAndPassword(String email, String password) async {
+  Future<void> signInWithEmailAndPassword(String email, String password) async { // 로그인을 할 경우 userCredintial로 로그인한 계정 정보를 저장함.
     try {
       userCredential = await auth.signInWithEmailAndPassword(
         email: email,
@@ -23,13 +23,13 @@ class Auth {
     }
   }
 
-  Future<void> registerWithEmailAndPassword(String email, String password) async {
+  Future<void> registerWithEmailAndPassword(String email, String password) async { // 회원가입 메소드인데 아직 완벽하지 않음
     try {
-      userCredential = await auth.createUserWithEmailAndPassword(
+      await auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      print("회원가입 성공함: ${userCredential?.user?.email}");
+      print("회원가입 성공함: ${email}");
     } catch (e) {
       print("회원가입 실패함: $e");
     }
@@ -38,7 +38,7 @@ class Auth {
 
 
 
-class LoginWidget extends StatelessWidget {
+class LoginWidget extends StatelessWidget { // 로그인 화면
   createUserWithEmailAndPassword() {
     // TODO: implement createUserWithEmailAndPassword
     throw UnimplementedError();
@@ -54,9 +54,9 @@ class LoginWidget extends StatelessWidget {
       home: Scaffold(
         backgroundColor: Colors.white,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(56.0),
+          preferredSize: Size.fromHeight(125.0),
           child: Padding(
-            padding: EdgeInsets.only(left: 16.0, top: 16.0),
+            padding: EdgeInsets.only(left: 30.0, top: 40.0),
             child: AppBar(
               backgroundColor: Colors.white,
               leading: IconButton(
@@ -71,9 +71,10 @@ class LoginWidget extends StatelessWidget {
         body: SingleChildScrollView(
           child: Center(
             child: Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(60.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Image.asset("assets/images/logo.png", width: 200),
@@ -179,7 +180,17 @@ class LoginWidget extends StatelessWidget {
   }
 }
 
-class AuthTextField extends StatelessWidget {
+class SignInWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+
+    );
+  }
+
+}
+
+class AuthTextField extends StatelessWidget { // 로그인 화면의 textfield 회원가입 화면이나 ID/PW 찾기에서도 사용해도 될 듯
   final bool obscureText;
   final String labelText;
   final String imagePath;
