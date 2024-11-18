@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 final Auth auth = Auth();
@@ -11,7 +11,7 @@ class Auth { // 계정 정보를 담는 클래스
   final FirebaseAuth auth = FirebaseAuth.instance;
   UserCredential? userCredential; // 계정 정보를 담는 객체
 
-  Future<void> signInWithEmailAndPassword(String email, String password) async { // 로그인을 할 경우 userCredintial로 로그인한 계정 정보를 저장함.
+  Future<void> logIn(String email, String password) async { // 로그인을 할 경우 userCredintial로 로그인한 계정 정보를 저장함.
     try {
       userCredential = await auth.signInWithEmailAndPassword(
         email: email,
@@ -23,7 +23,7 @@ class Auth { // 계정 정보를 담는 클래스
     }
   }
 
-  Future<void> registerWithEmailAndPassword(String email, String password) async { // 회원가입 메소드인데 아직 완벽하지 않음
+  Future<void> signIn(String email, String password) async { // 회원가입 메소드인데 아직 완벽하지 않음
     try {
       await auth.createUserWithEmailAndPassword(
         email: email,
@@ -31,6 +31,14 @@ class Auth { // 계정 정보를 담는 클래스
       );
       print("회원가입 성공함: ${email}");
     } catch (e) {
+      print("회원가입 실패함: $e");
+    }
+  }
+
+  Future<void> sendPwRefactorEmail(String email) async {
+    try{
+
+    } catch(e){
       print("회원가입 실패함: $e");
     }
   }
@@ -99,7 +107,7 @@ class LoginWidget extends StatelessWidget { // 로그인 화면
                   SizedBox(height: 30),
                   ElevatedButton(
                     onPressed: () {
-                      auth.signInWithEmailAndPassword(emailController.text, pwController.text);
+                      auth.logIn(emailController.text, pwController.text);
                       // 로그인 메소드 넣어야 함
                       if(auth.userCredential!=null){
                         // Navigator.push(context, MaterialPageRoute(builder: (context) => MainWidget(user_uid:auth.user.uid),));
