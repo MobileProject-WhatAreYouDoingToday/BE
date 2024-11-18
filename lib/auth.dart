@@ -11,7 +11,7 @@ class Auth { // 계정 정보를 담는 클래스
   final FirebaseAuth auth = FirebaseAuth.instance;
   UserCredential? userCredential; // 계정 정보를 담는 객체
 
-  Future<void> signInWithEmailAndPassword(String email, String password) async { // 로그인을 할 경우 userCredintial로 로그인한 계정 정보를 저장함.
+  Future<void> logIn(String email, String password) async { // 로그인을 할 경우 userCredintial로 로그인한 계정 정보를 저장함.
     try {
       userCredential = await auth.signInWithEmailAndPassword(
         email: email,
@@ -23,28 +23,23 @@ class Auth { // 계정 정보를 담는 클래스
     }
   }
 
-  Future<void> registerWithEmailAndPassword(String email, String password) async { // 회원가입 메소드 firebase auth에 사용자 정보 및 uid가 알아서 추가됨
+  Future<void> signIn(String email, String password) async { // 회원가입 메소드인데 아직 완벽하지 않음
     try {
       await auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-
       print("회원가입 성공함: ${email}");
     } catch (e) {
       print("회원가입 실패함: $e");
     }
   }
 
-  Future<void> changePw(String email, String password) async{ // 비밀번호 변경 메일 보내는거임
-    try {
-      await auth.sendPasswordResetEmail(
-        email: email,
-      );
+  Future<void> sendPwRefactorEmail(String email) async {
+    try{
 
-      print("이메일 전송 성공함: ${email}");
-    } catch (e) {
-      print("이메일 전송 실패함: $e");
+    } catch(e){
+      print("회원가입 실패함: $e");
     }
   }
 }
@@ -112,9 +107,10 @@ class LoginWidget extends StatelessWidget { // 로그인 화면
                   SizedBox(height: 30),
                   ElevatedButton(
                     onPressed: () {
-                      auth.signInWithEmailAndPassword(emailController.text, pwController.text); //로그인 버튼 누를 시 로그인 메소드 실행
+                      auth.signInWithEmailAndPassword(emailController.text, pwController.text);
+                      // 로그인 메소드 넣어야 함
                       if(auth.userCredential!=null){
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => MainWidget(auth:auth.user.uid),)); //메인화면으로 가는 걸 구현할 예정 auth uid만 보내도 찾을 수 있을거임
+                        // Navigator.push(context, MaterialPageRoute(builder: (context) => MainWidget(user_uid:auth.user.uid),));
                       }
                       print('버튼이 클릭되었습니다!');
                     },
