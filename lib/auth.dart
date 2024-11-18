@@ -1,15 +1,19 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:math' as math;
+import 'email.dart';
+import 'store.dart';
 
 final Auth auth = Auth();
 
 class Auth { // 계정 정보를 담는 클래스
   final FirebaseAuth auth = FirebaseAuth.instance;
-  UserCredential? userCredential; // 계정 정보를 담는 객체
+  final Store store = Store();
+  UserCredential? userCredential;
+
 
   Future<void> logIn(String email, String password) async { // 로그인을 할 경우 userCredintial로 로그인한 계정 정보를 저장함.
     try {
@@ -23,27 +27,33 @@ class Auth { // 계정 정보를 담는 클래스
     }
   }
 
-  Future<void> signIn(String email, String password) async { // 회원가입 메소드인데 아직 완벽하지 않음
+  Future<void> signIn(String email, String password, String name) async { // 회원가입을 하고 파이어스토어 문서를 생성함
     try {
-      await auth.createUserWithEmailAndPassword(
+      userCredential = await auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
       print("회원가입 성공함: ${email}");
+      store.setUser(userCredential!.user!.uid, name, email); // 이 부분이 그거임
+      userCredential = null;
     } catch (e) {
       print("회원가입 실패함: $e");
     }
   }
 
-  Future<void> sendPwRefactorEmail(String email) async {
-    try{
-
-    } catch(e){
-      print("회원가입 실패함: $e");
-    }
-  }
+  // Future<void> sendPwRefactorEmail(String email, int code) async { 시간 많이 남으면 ㄱㄱ
+  //   int code = math.Random().nextInt(100);
+  //   Mail mail = Mail(email, code);
+  //   try{
+  //     mail.send();
+  //     // if(this.code==code){
+  //     //  await auth.updatePassword(newPassword);
+  //     // }
+  //   } catch(e){
+  //     print("회원가입 실패함: $e");
+  //   }
+  // }
 }
-
 
 
 class LoginWidget extends StatelessWidget { // 로그인 화면
@@ -107,7 +117,7 @@ class LoginWidget extends StatelessWidget { // 로그인 화면
                   SizedBox(height: 30),
                   ElevatedButton(
                     onPressed: () {
-                      auth.signInWithEmailAndPassword(emailController.text, pwController.text);
+                      auth.logIn(emailController.text, pwController.text);
                       // 로그인 메소드 넣어야 함
                       if(auth.userCredential!=null){
                         // Navigator.push(context, MaterialPageRoute(builder: (context) => MainWidget(user_uid:auth.user.uid),));
