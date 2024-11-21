@@ -5,10 +5,9 @@ import 'package:flutter/material.dart';
 import 'auth.dart';
 
 class SignWidget extends StatelessWidget { // 회원가입 화면
-  createUserWithEmailAndPassword() {
-    // TODO: implement createUserWithEmailAndPassword
-    throw UnimplementedError();
-  }
+  final String uid;
+
+  SignWidget({required this.uid});
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -107,7 +106,7 @@ class SignWidget extends StatelessWidget { // 회원가입 화면
                 SizedBox(height: 50),
 
                 ElevatedButton(
-                  onPressed: () => signUp(context),
+                  onPressed: () => Auth().signIn(emailController.text, nameController.text, pwController.text),
                   child: Image.asset("assets/images/joinsignbutton.png"),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),

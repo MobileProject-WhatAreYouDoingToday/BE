@@ -7,6 +7,7 @@ import 'dart:math' as math;
 import 'email.dart';
 import 'store.dart';
 import 'creation.dart';
+import 'sign.dart';
 
 final Auth auth = Auth();
 
@@ -28,14 +29,15 @@ class Auth { // 계정 정보를 담는 클래스
     }
   }
 
-  Future<void> signIn(String email, String password, String name) async { // 회원가입을 하고 파이어스토어 문서를 생성함
+  Future<void> signIn(String email, String name, String pw) async { // 회원가입을 하고 파이어스토어 문서를 생성함
     try {
       userCredential = await auth.createUserWithEmailAndPassword(
         email: email,
-        password: password,
+        password: pw,
       );
+
+      store.setUser(email, userCredential!.user!.uid, name, pw);
       print("회원가입 성공함: ${email}");
-      store.setUser(userCredential!.user!.uid, name, email); // 이 부분이 그거임
       userCredential = null;
     } catch (e) {
       print("회원가입 실패함: $e");
@@ -136,10 +138,11 @@ class LoginWidget extends StatelessWidget { // 로그인 화면
                   SizedBox(height: 30),
                   ElevatedButton(
                     onPressed: () {
-                      auth.logIn(emailController.text, pwController.text);
-                      // 로그인 메소드 넣어야 함
+                      //auth.logIn(emailController.text, pwController.text); //로그인 메소드
+                      //auth.signIn(emailController.text, "name", pwController.text);
+
                       if(auth.userCredential!=null){
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => MainWidget(user_uid:auth.user.uid),));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => SignWidget(uid: auth.userCredential!.user!.uid));
                       }
                       print('버튼이 클릭되었습니다!');
                     },
@@ -292,7 +295,8 @@ class ChangePwWidget extends StatelessWidget { // 로그인 화면
                 SizedBox(height: 60),
                 ElevatedButton(
                   onPressed: () {
-                    auth.changePw(newPwController.text, checkNewPwController.text); // 비밀번호 변경 메소드
+                    auth.sendPwChangeEmail(newPwController.text);
+                    // auth.changePw(newPwController.text, checkNewPwController.text); // 비밀번호 변경 메소드
                     if(auth.userCredential!=null){
 
                     }
@@ -346,6 +350,126 @@ class ChangePwWidget extends StatelessWidget { // 로그인 화면
   }
 }
 
+class WillChangePwWidget extends StatelessWidget { // 로그인 화면
+  createUserWithEmailAndPassword() {
+    // TODO: implement createUserWithEmailAndPassword
+    throw UnimplementedError();
+  }
+
+  final TextEditingController emailController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(125.0),
+        child: Padding(
+          padding: EdgeInsets.only(left: 30.0, top: 40.0),
+          child: AppBar(
+            backgroundColor: Colors.white,
+            leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Image.asset("assets/images/closebutton.png"),
+            ),
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(60.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(padding: EdgeInsets.only(left: 5.0,),
+                    child: Column(
+                      children: [
+                        Text(
+                          'PW 변경',
+                          style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    )
+                ),
+                Padding(padding: EdgeInsets.only(left: 5.0, top: 20.0,),
+                    child: Column(
+                      children: [
+                        Text(
+                          'PW를 재설정해주세요',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w100, color: Color(0xFF474A57)),
+                        ),
+                      ],
+                    )
+                ),
+                SizedBox(height: 40),
+                AuthTextField(
+                  controller: emailController,
+                  obscureText: false,
+                  labelText: 'New PW',
+                  imagePath: 'assets/images/user.png',
+                ),
+                SizedBox(height: 20),
+                SizedBox(height: 60),
+                ElevatedButton(
+                  onPressed: () {
+
+                    if(auth.userCredential!=null){
+
+                    }
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => LoginWidget()));
+                    print('버튼이 클릭되었습니다!');
+                  },
+                  child: Image.asset("assets/images/changepwbutton.png"),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+                Container(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '이미 계정이 있으신가요??',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          // 회원가입 창으로 이동해야 함
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => LoginWidget()));
+                        },
+                        child: Text(
+                          ' 회원가입',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepOrangeAccent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 5),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class SignInWidget extends StatelessWidget {
   @override

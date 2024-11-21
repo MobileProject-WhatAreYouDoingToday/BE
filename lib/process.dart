@@ -76,11 +76,3 @@ class ProcessScreen extends StatelessWidget {
     );
   }
 }
-
-// Task 모델 클래스
-class Task {
-  final String title;
-  bool isCompleted;
-
-  Task({required this.title, this.isCompleted = false});
-}

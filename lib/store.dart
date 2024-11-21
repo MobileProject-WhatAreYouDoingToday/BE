@@ -12,10 +12,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class UserData {
   final String name;
   final String uid;
+  final String pw;
 
   UserData({
     required this.name,
     required this.uid,
+    required this.pw
   });
 
   factory UserData.fromFirestore(
@@ -25,7 +27,8 @@ class UserData {
     final data = snapshot.data();
     return UserData(
       name: data?['name'],
-      uid: data?['email'],
+      uid: data?['uid'],
+      pw: data?['pw']
     );
   }
 
@@ -40,16 +43,20 @@ class UserData {
 class Todo {
   final String name;
   final String categori;
+  final String description;
   final Timestamp date;
   final bool isNotification;
   final int priority;
+  final bool is_completed;
 
   Todo({
     required this.name,
     required this.categori,
     required this.date,
     required this.isNotification,
-    required this.priority
+    required this.priority,
+    required this.is_completed,
+    required this.description
   });
 
   factory Todo.fromFirestore(
@@ -62,7 +69,9 @@ class Todo {
       categori: data?['categori'],
       date: data?['date'],
       isNotification: data?['isNotification'],
-      priority: data?['priority']
+      priority: data?['priority'],
+      is_completed : data?['is_completed'],
+      description: data?['description']
     );
   }
 
@@ -98,7 +107,7 @@ class Store {
     }
   }
 
-  Future<void> setUser(String email,String uid, String name) async { // 유저 데이터 설정 및 추가하기
+  Future<void> setUser(String email,String uid, String name, String pw) async { // 유저 데이터 설정 및 추가하기
     final ref = store.collection("users").doc(email).withConverter( // UserData 클래스로 변환
       fromFirestore: UserData.fromFirestore,
       toFirestore: (UserData user, _) => user.toFirestore(),
@@ -106,12 +115,15 @@ class Store {
     final docSnap = await ref.get();
     final user = docSnap.data();
     if(user == null) {
-      final todoList = store.collection("todolist"); // todolist 컬렉션 생성
-    }
-    final userData = UserData(name: name, uid: email);
-    await ref.set(userData);
+      final userData = UserData(name: name, uid: uid, pw: pw);
+      await ref.set(userData);
 
-    print('유저 데이터 저장 성공'); // await 문이므로 확인용으로 print
+      final todoListRef = store.collection("users").doc(email).collection("todo");
+      await todoListRef.doc("placeholder").set({'placeholder': true});
+      print('유저 데이터 저장 성공'); // await 문이므로 확인용으로 print
+    }
+
+
   }
 
   Future<List<Todo>?> getTodoList(String email) async { // todolist 불러오기
@@ -131,6 +143,28 @@ class Store {
       return null;
     }
   }
+
+  Future<void> setTodo(String email, Todo todo) async {
+    final ref = FirebaseFirestore.instance
+        .collection("users")
+        .doc(email)
+        .collection("todo")
+        .withConverter<Todo>(
+      fromFirestore: (snapshot, options) => Todo.fromFirestore(snapshot, options),
+      toFirestore: (todo, options) => todo.toFirestore(),
+    );
+
+    try {
+      if(ref.doc("placeholder") != null){
+        ref.doc("placeholder").delete();
+      }
+      await ref.add(todo);
+      print('Todo 추가 성공');
+    } catch (e) {
+      print('Todo 추가 실패: $e');
+    }
+  }
+
 
   Future<Todo?> getTodo(String email, Timestamp date, String category,int priority) async { // 특정 todo 불러오기
     final ref = store.collection("users").doc(email).collection("todolist")

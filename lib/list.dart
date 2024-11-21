@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'creation.dart'; // creation.dart 파일을 임포트합니다.
-import 'process.dart' as process; // process.dart를 접두사와 함께 임포트합니다.
-import 'task.dart'; // Task 모델을 임포트합니다.
+import 'creation.dart';
+import 'process.dart' as process;
+import 'task.dart';
 
 class TodoListPage extends StatefulWidget {
   @override
@@ -11,14 +11,13 @@ class TodoListPage extends StatefulWidget {
 
 class _TodoListPageState extends State<TodoListPage> {
   DateTime selectedDate = DateTime.now();
-  List<Task> tasks = []; // Task 모델 리스트로 변경
-  List<bool> isMemoVisible = []; // 각 할 일의 메모 표시 상태
+  List<Task> tasks = [];
+  List<bool> isMemoVisible = [];
 
   @override
   void initState() {
     super.initState();
-    // isMemoVisible 리스트 초기화
-    isMemoVisible = List<bool>.filled(tasks.length, false); // 수정된 부분
+    isMemoVisible = [];
   }
 
   void _prevDate() {
@@ -36,8 +35,15 @@ class _TodoListPageState extends State<TodoListPage> {
   void _toggleMemoVisibility(int index) {
     setState(() {
       if (index < isMemoVisible.length) {
-        isMemoVisible[index] = !isMemoVisible[index]; // 특정 인덱스의 메모 열기/닫기 상태 토글
+        isMemoVisible[index] = !isMemoVisible[index];
       }
+    });
+  }
+
+  void _addTask(Task task) {
+    setState(() {
+      tasks.add(task);
+      isMemoVisible.add(false);
     });
   }
 
@@ -48,10 +54,7 @@ class _TodoListPageState extends State<TodoListPage> {
     );
 
     if (result is Task) {
-      setState(() {
-        tasks.add(result); // Task 객체 추가
-        isMemoVisible.add(false); // 새로운 작업 추가 시 메모 표시 상태 초기화
-      });
+      _addTask(result);
     }
   }
 
@@ -73,15 +76,15 @@ class _TodoListPageState extends State<TodoListPage> {
 
     Task? nextTask = tasks.firstWhere(
       (task) => !task.isCompleted,
-      orElse: () => Task(title: '모든 항목이 완료되었습니다.'), // 기본값 제공
+      orElse: () => Task(title: '모든 작업 완료', isCompleted: true),
     );
 
     return Scaffold(
       appBar: AppBar(
         title: Text('할 일 목록'),
         leading: IconButton(
-          icon: Icon(Icons.check), // 체크 아이콘
-          onPressed: _navigateToProcessPage, // ProcessScreen으로 이동
+          icon: Icon(Icons.check),
+          onPressed: _navigateToProcessPage,
         ),
       ),
       body: Padding(
@@ -93,18 +96,18 @@ class _TodoListPageState extends State<TodoListPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                    icon: Icon(Icons.chevron_left), onPressed: _prevDate),
-                Text(DateFormat('yyyy.MM.dd').format(selectedDate),
-                    style:
-                        TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  icon: Icon(Icons.chevron_left),
+                  onPressed: _prevDate,
+                ),
+                Text(
+                  DateFormat('yyyy.MM.dd').format(selectedDate),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
                 IconButton(
-                    icon: Icon(Icons.chevron_right), onPressed: _nextDate),
+                  icon: Icon(Icons.chevron_right),
+                  onPressed: _nextDate,
+                ),
               ],
-            ),
-            SizedBox(height: 20),
-            Text(
-              '달성률: ${achievementRate.toStringAsFixed(0)}%',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
             Expanded(
@@ -129,37 +132,31 @@ class _TodoListPageState extends State<TodoListPage> {
                             ),
                           ),
                           IconButton(
-                            icon: Icon(isMemoVisible.length > index &&
-                                    isMemoVisible[index]
+                            icon: Icon(isMemoVisible[index]
                                 ? Icons.remove
                                 : Icons.add),
                             onPressed: () => _toggleMemoVisibility(index),
                           ),
                         ],
                       ),
-                      if (isMemoVisible.length > index && isMemoVisible[index])
-                        Text(tasks[index].memo ?? '',
-                            style: TextStyle(color: Colors.grey)),
-                      SizedBox(height: 10), // 간격 조정
+                      if (isMemoVisible[index])
+                        Text(
+                          tasks[index].memo ?? '',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      SizedBox(height: 10),
                     ],
                   );
                 },
               ),
             ),
-            if (nextTask != null) ...[
-              Text(
-                '아직 달성하지 못한 항목:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(nextTask.title, style: TextStyle(color: Colors.red)),
-            ],
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(icon: Icon(Icons.navigate_before), onPressed: () {}),
                 IconButton(
-                  icon: Icon(Icons.add), // 오른쪽 버튼 아이콘
-                  onPressed: _navigateToCreationPage, // CreationPage로 이동
+                  icon: Icon(Icons.add),
+                  onPressed: _navigateToCreationPage,
                 ),
               ],
             ),
