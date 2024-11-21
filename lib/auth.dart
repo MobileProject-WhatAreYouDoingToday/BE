@@ -138,12 +138,8 @@ class LoginWidget extends StatelessWidget { // 로그인 화면
                   SizedBox(height: 30),
                   ElevatedButton(
                     onPressed: () {
-                      //auth.logIn(emailController.text, pwController.text); //로그인 메소드
+                      auth.logIn(emailController.text, pwController.text); //로그인 메소드
                       //auth.signIn(emailController.text, "name", pwController.text);
-
-                      if(auth.userCredential!=null){
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => SignWidget(uid: auth.userCredential!.user!.uid));
-                      }
                       print('버튼이 클릭되었습니다!');
                     },
                     child: Image.asset("assets/images/loginIcon.png"),
@@ -169,7 +165,7 @@ class LoginWidget extends StatelessWidget { // 로그인 화면
                         GestureDetector(
                           onTap: () {
                             // 회원가입 창으로 이동해야 함
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => CreationPage()));
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => SignWidget(auth: auth)));
                           },
                           child: Text(
                             ' 회원가입',

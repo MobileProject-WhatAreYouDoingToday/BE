@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'auth.dart';
 
 class SignWidget extends StatelessWidget { // 회원가입 화면
-  final String uid;
+  final Auth auth;
 
-  SignWidget({required this.uid});
+  SignWidget({required this.auth});
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -106,7 +106,9 @@ class SignWidget extends StatelessWidget { // 회원가입 화면
                 SizedBox(height: 50),
 
                 ElevatedButton(
-                  onPressed: () => Auth().signIn(emailController.text, nameController.text, pwController.text),
+                  onPressed: () async => {
+                    signUp(context);
+                    auth.signIn(emailController.text, nameController.text, pwController.text);},
                   child: Image.asset("assets/images/joinsignbutton.png"),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
