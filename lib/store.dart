@@ -132,10 +132,11 @@ class Store {
     }
   }
 
-  Future<Todo?> getTodo(String email, Timestamp date, int priority) async { // 특정 todo 불러오기
+  Future<Todo?> getTodo(String email, Timestamp date, String category,int priority) async { // 특정 todo 불러오기
     final ref = store.collection("users").doc(email).collection("todolist")
         .where("date", isEqualTo: date)
         .where("priority", isEqualTo: priority)
+        .where("category", isEqualTo: category)
         .withConverter(
       fromFirestore: Todo.fromFirestore,
       toFirestore: (Todo todo, _) => todo.toFirestore(),
