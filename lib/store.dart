@@ -36,6 +36,7 @@ class UserData {
     return {
       if (name != null) 'name': name,
       if (uid != null) 'uid': uid,
+      if (pw != null) 'pw' : pw
     };
   }
 }
@@ -92,8 +93,8 @@ class Store {
 
   Future<UserData?> getUser(String email) async { // 유저 데이터 불러오기
     final ref = store.collection("users").doc(email).withConverter( // UserData 클래스로 변환
-      fromFirestore: UserData.fromFirestore,
-      toFirestore: (UserData user, _) => user.toFirestore(),
+      fromFirestore: (snapshot, options) => UserData.fromFirestore(snapshot, options),
+      toFirestore: (user, options) => user.toFirestore(),
     );
 
     final docSnap = await ref.get();
@@ -122,8 +123,6 @@ class Store {
       await todoListRef.doc("placeholder").set({'placeholder': true});
       print('유저 데이터 저장 성공'); // await 문이므로 확인용으로 print
     }
-
-
   }
 
   Future<List<Todo>?> getTodoList(String email) async { // todolist 불러오기
