@@ -9,6 +9,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 * 그러면 순서라는 필드를 문서에 넣고 그 모든 문서들을 다 찾아야 함 굉장히 비효율적이긴 하지만 문서를 지웠다가 만드는 것보다는 좋아보임
 * */
 
+/*
+* 달성률은
+*
+*
+*
+*
+* */
+
 class UserData {
   final String name;
   final String uid;

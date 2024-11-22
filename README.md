@@ -2,10 +2,17 @@
 
 ## **BE**
 
-A new Flutter project.
+firebase와 플러터의 연동을 통해서 수행할 수 있는 기능들을 구현하는 레포지토리
 
 ## Getting Started
 
+### 사용한 파이어베이스 기능들
+1. firebase auth
+   - 사용자의 계정에 대해서 보다 쉽게 다룰 수 있게 해줌
+     - 로그인 및 회원가입
+     - pw 변경
+2. firebase firestore
+   - 여러 할 일이나 사용자에 대한 정보를 저장함
 This project is a starting point for a Flutter application.
 
 A few resources to get you started if this is your first Flutter project:
@@ -16,4 +23,3 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
->>>>>>> master
