@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'store.dart';
 
-final Auth auth = Auth();
+final Auth authe = Auth();
 
 class Auth { // 계정 정보를 담는 클래스
   final FirebaseAuth auth = FirebaseAuth.instance;
@@ -134,7 +134,8 @@ class LoginWidget extends StatelessWidget { // 로그인 화면
                       );
                     }
                     else{
-                      auth.logIn(emailController.text, pwController.text); //로그인 메소드
+                      authe.logIn(emailController.text, pwController.text); //로그인 메소드
+                      //Navigator.push(context, MaterialPageRoute(builder: (context) => MainWidget(auth: authe)));
                     }
                   },
                   child: Image.asset("assets/images/loginIcon.png"),
@@ -160,7 +161,7 @@ class LoginWidget extends StatelessWidget { // 로그인 화면
                       GestureDetector(
                         onTap: () {
                           // 회원가입 창으로 이동해야 함
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => SignWidget(auth: auth)));
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => SignWidget()));
                         },
                         child: Text(
                           ' 회원가입',
@@ -189,7 +190,7 @@ class LoginWidget extends StatelessWidget { // 로그인 화면
                       GestureDetector(
                         onTap: () {
                           // ID/PW 찾기 창으로 이동해야 함
-                          auth.userCredential==null;
+                          authe.userCredential==null;
                           Navigator.push(context, MaterialPageRoute(builder: (context) => WillChangePwWidget()));
                         },
                         child: Text(
@@ -217,8 +218,9 @@ class ChangePwWidget extends StatelessWidget { // 로그인 화면
   final TextEditingController newPwController = TextEditingController();
   final TextEditingController checkNewPwController = TextEditingController();
   final Auth auth;
+  final UserData user;
 
-  ChangePwWidget({required this.auth});
+  ChangePwWidget({required this.auth, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -286,7 +288,8 @@ class ChangePwWidget extends StatelessWidget { // 로그인 화면
                 ElevatedButton(
                   onPressed: () {
                     // auth.sendPwChangeEmail(newPwController.text);
-                    auth.changePw(newPwController.text, checkNewPwController.text); // 비밀번호 변경 메소드
+                    auth.changePw(newPwController.text, checkNewPwController.text); // Auth 상에서의 비밀번호 변경 메소드
+                    Store().setUser(auth.userCredential?.user!.email, user.uid, user.name, newPwController.text); // firestore 상에서의 비밀번호 변경 메소드
                     auth.userCredential == null;
                     Navigator.push(context, MaterialPageRoute(builder: (context) => LoginWidget()));
                     print('버튼이 클릭되었습니다!');
@@ -410,29 +413,27 @@ class WillChangePwWidget extends StatelessWidget { // 로그인 화면
                   onPressed: () async {
                     try {
                       // 유저 크레덴셜 초기화
-                      auth.userCredential = null;
+                      authe.userCredential = null;
 
                       // 유저 크레덴셜이 null일 때만 처리
-                      if (auth.userCredential == null) {
-                        UserData? c_user = await auth.store.getUser(emailController.text);
+                      if (authe.userCredential == null) {
+                        UserData? c_user = await authe.store.getUser(emailController.text);
 
-                        if (c_user != null&&c_user.name != nameController.text) {
+                        if (c_user != null&&c_user.name == nameController.text) {
                           print(c_user.name);
-                          auth.userCredential = await auth.auth.signInWithEmailAndPassword(
+                          authe.userCredential = await authe.auth.signInWithEmailAndPassword(
                               email: emailController.text,
                               password: c_user.pw
                           );
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => ChangePwWidget(auth: auth)));
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => ChangePwWidget(auth: authe, user: c_user,)));
                         }
                       } else {
                         print('유저 정보를 불러올 수 없습니다.');
                         return;
                       }
-
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => ChangePwWidget(auth: auth)));
                     } catch (e) {
                       print('오류 발생: $e');
-                      auth.userCredential = null; // 오류 발생 시 null로 재설정
+                      authe.userCredential = null; // 오류 발생 시 null로 재설정
                     }
                   },
                   child: Image.asset("assets/images/confirmbutton.png"),
@@ -484,10 +485,6 @@ class WillChangePwWidget extends StatelessWidget { // 로그인 화면
 }
 
 class SignWidget extends StatelessWidget { // 회원가입 화면
-  final Auth auth;
-
-  SignWidget({required this.auth});
-
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController pwController = TextEditingController();
@@ -587,7 +584,7 @@ class SignWidget extends StatelessWidget { // 회원가입 화면
                 ElevatedButton(
                   onPressed: () async {
                     signUp(context);
-                    auth.signIn(emailController.text, nameController.text, pwController.text);
+                    Auth().signIn(emailController.text, nameController.text, pwController.text);
                     print(pwController.text);
                   },
                   child: Image.asset("assets/images/joinsignbutton.png"),

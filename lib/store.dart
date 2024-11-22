@@ -87,7 +87,6 @@ class Todo {
   }
 }
 
-
 class Store {
   final FirebaseFirestore store = FirebaseFirestore.instance;
 
@@ -108,20 +107,24 @@ class Store {
     }
   }
 
-  Future<void> setUser(String email,String uid, String name, String pw) async { // 유저 데이터 설정 및 추가하기
+  Future<void> setUser(String? email,String uid, String name, String pw) async { // 유저 데이터 설정 및 추가하기
     final ref = store.collection("users").doc(email).withConverter( // UserData 클래스로 변환
       fromFirestore: UserData.fromFirestore,
       toFirestore: (UserData user, _) => user.toFirestore(),
     );
     final docSnap = await ref.get();
     final user = docSnap.data();
+
     if(user == null) {
       final userData = UserData(name: name, uid: uid, pw: pw);
       await ref.set(userData);
-
       final todoListRef = store.collection("users").doc(email).collection("todo");
       await todoListRef.doc("placeholder").set({'placeholder': true});
-      print('유저 데이터 저장 성공'); // await 문이므로 확인용으로 print
+      print('유저 데이터 생성 성공'); // await 문이므로 확인용으로 print
+    } else {
+      final userData = UserData(name: name, uid: uid, pw: pw);
+      await ref.set(userData);
+      print('유저 데이터 변경 성공'); // await 문이므로 확인용으로 print
     }
   }
 
