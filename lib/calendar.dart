@@ -64,6 +64,7 @@ class _CalendarPageState extends State<CalendarPage> {
       height: 812, // 고정된 높이
       child: Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween, // 양쪽 정렬
             children: [
@@ -73,10 +74,10 @@ class _CalendarPageState extends State<CalendarPage> {
                 },
                 child: Padding(
                   padding: const EdgeInsets.only(left: 30), // 좌측에서 30만큼 떨어짐
-                  child: Image.asset(
-                    '../asset/images/chart.png',
-                    height: 30,
-                    width: 30,
+                  child: Container(
+                    width: 60.0,
+                    height: 60.0,
+                    child: Image.asset("assets/images/chart.png"),
                   ),
                 ),
               ),
@@ -91,7 +92,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 child: Padding(
                   padding: const EdgeInsets.only(right: 30), // 우측에서 30만큼 떨어짐
                   child: Image.asset(
-                    '../asset/images/todo.png',
+                    'assets/images/todobutton.png',
                     height: 30,
                     width: 30,
                   ),
