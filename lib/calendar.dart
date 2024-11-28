@@ -36,9 +36,21 @@ class _CalendarPageState extends State<CalendarPage> {
     _focusedDay = DateTime.now();
     _selectedDay = _focusedDay;
 
-    // 초기화 시 타입 명시
-    _events = <DateTime, List<Event>>{};
-    _selectedEvents = ValueNotifier(_events[_selectedDay] ?? []);
+    _events = <DateTime, List<Event>>{
+      DateTime(2024, 10, 1): [
+        Event("독서", const Color(0xFFFF9692)),
+        Event("공부", const Color(0xFF61E4C5))
+      ],
+      DateTime(2024, 10, 2): [
+        Event("취미", const Color(0xFFDBBEFC)),
+        Event("운동", const Color(0xFFFFD465))
+      ],
+      DateTime(2024, 10, 3): [
+        Event("독서", const Color(0xFFFF9692)),
+      ],
+    };
+
+    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay));
   }
 
   List<Event> _getEventsForDay(DateTime day) {
@@ -47,109 +59,158 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          DateFormat('MMMM').format(_focusedDay), // 현재 월 이름만 표시
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          TableCalendar(
-            firstDay: DateTime(2020, 1, 1),
-            lastDay: DateTime(2030, 12, 31),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-                _selectedEvents.value = _getEventsForDay(selectedDay);
-              });
-            },
-            eventLoader: _getEventsForDay,
-            calendarStyle: const CalendarStyle(
-              todayDecoration: BoxDecoration(
-                color: Colors.orange,
-                shape: BoxShape.circle,
+    return SizedBox(
+      width: 375, // 고정된 너비
+      height: 812, // 고정된 높이
+      child: Scaffold(
+        appBar: AppBar(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, // 양쪽 정렬
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/MainWidget'); // MainWidget.dart로 이동
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 30), // 좌측에서 30만큼 떨어짐
+                  child: Image.asset(
+                    '../asset/images/chart.png',
+                    height: 30,
+                    width: 30,
+                  ),
+                ),
               ),
-            ),
-            headerStyle: const HeaderStyle(
-              formatButtonVisible: false,
-              titleCentered: true,
-              leftChevronVisible: false,
-              rightChevronVisible: false,
-            ),
-            onPageChanged: (focusedDay) {
-              _focusedDay = focusedDay;
-            },
-            calendarBuilders: CalendarBuilders(
-              markerBuilder: (context, date, events) {
-                if (events.isNotEmpty) {
-                  // 명시적으로 타입 변환
-                  final firstEvent = events.first as Event;
-                  return Positioned(
-                    bottom: 1,
-                    right: 1,
-                    child: Text(
-                      firstEvent.title, // title 접근 가능
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
+              const Text(
+                '캘린더',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/list'); // list.dart로 이동
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 30), // 우측에서 30만큼 떨어짐
+                  child: Image.asset(
+                    '../asset/images/todo.png',
+                    height: 30,
+                    width: 30,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8.0),
-          ValueListenableBuilder<List<Event>>(
-            valueListenable: _selectedEvents,
-            builder: (context, events, _) {
-              return Column(
-                children: events
-                    .map((event) => ListTile(
-                  title: Text(
-                    event.title, // Event 타입으로 간주
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
+          centerTitle: true,
+        ),
+        body: Stack(
+          children: [
+            Center(
+              child: Column(
+                children: [
+                  TableCalendar(
+                    firstDay: DateTime(2020, 1, 1),
+                    lastDay: DateTime(2030, 12, 31),
+                    focusedDay: _focusedDay,
+                    selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                    onDaySelected: (selectedDay, focusedDay) {
+                      setState(() {
+                        _selectedDay = selectedDay;
+                        _focusedDay = focusedDay;
+                        _selectedEvents.value = _getEventsForDay(selectedDay);
+                      });
+                    },
+                    eventLoader: _getEventsForDay,
+                    calendarStyle: const CalendarStyle(
+                      todayDecoration: BoxDecoration(), // 오늘의 데코레이션 제거 (숫자는 유지)
+                      selectedDecoration: BoxDecoration(), // 선택된 날짜 데코레이션 제거
+                      markerDecoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      cellMargin: EdgeInsets.symmetric(vertical: 8), // 날짜 간 간격 설정
+                    ),
+                    headerStyle: HeaderStyle(
+                      formatButtonVisible: false,
+                      titleCentered: true,
+                      titleTextFormatter: (date, locale) =>
+                          DateFormat.MMMM(locale).format(date), // 년도 제거
+                    ),
+                    daysOfWeekHeight: 55, // 요일과 날짜 사이 간격
+                    rowHeight: 80, // 각 날짜 간의 간격 설정
+                    calendarBuilders: CalendarBuilders(
+                      markerBuilder: (context, date, events) {
+                        if (events.isNotEmpty) {
+                          final eventList = events.cast<Event>(); // events를 Event 타입으로 캐스팅
+                          return Column(
+                            children: eventList.map((event) {
+                              return Container(
+                                margin: const EdgeInsets.only(top: 2),
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: event.color,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  event.title,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
                     ),
                   ),
-                ))
-                    .toList(),
-              );
-            },
-          ),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                if (_events[_selectedDay] == null) {
-                  _events[_selectedDay] = [];
-                }
-                _events[_selectedDay]?.add(Event('독서'));
-                _selectedEvents.value = _getEventsForDay(_selectedDay);
-              });
-            },
-            child: const Text('Add Event'),
-          ),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        color: Colors.black,
-        child: TextButton(
-          onPressed: () {
-            // 버튼 클릭 시 동작 정의
-          },
-          child: const Text(
-            '이번달 달성률 보러가기',
-            style: TextStyle(color: Colors.white, fontSize: 16),
-          ),
+                  const SizedBox(height: 8.0),
+                  ValueListenableBuilder<List<Event>>(
+                    valueListenable: _selectedEvents,
+                    builder: (context, events, _) {
+                      return Column(
+                        children: events
+                            .map((event) => ListTile(
+                                  title: Text(
+                                    event.title,
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              bottom: 40, // 하단에서 40 떨어짐
+              left: MediaQuery.of(context).size.width / 2 - 327 / 2, // 중앙 정렬
+              child: SizedBox(
+                width: 327,
+                height: 60,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () {
+                    // 버튼 클릭 시 동작 정의
+                  },
+                  child: const Text(
+                    '이번 달 달성률 분석 >',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -157,6 +218,7 @@ class _CalendarPageState extends State<CalendarPage> {
 }
 
 class Event {
-  final String title; // Non-nullable로 변경
-  Event(this.title);
+  final String title;
+  final Color color;
+  Event(this.title, this.color);
 }
