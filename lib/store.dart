@@ -58,7 +58,6 @@ class Todo {
   final bool isNotification; // todo 알림여부
   late final int priority; // todo 우선순위, 오늘의 달성률에서 맨위에 있는거 보이게 하는용도
   final bool is_completed; //todo 완료여부
-  final Task task;
 
   Todo({
     required this.name,
@@ -68,7 +67,6 @@ class Todo {
     required this.priority,
     required this.is_completed,
     required this.description,
-    required this.task
   });
 
   factory Todo.fromFirestore(
@@ -84,7 +82,6 @@ class Todo {
       priority: data?['priority'],
       is_completed : data?['is_completed'],
       description: data?['description'],
-      task: data?['task']
     );
   }
 
@@ -140,20 +137,28 @@ class Store {
     }
   }
 
-  Future<List<Todo>?> getTodoList(String email) async { // todolist 불러오기
-    final ref = store.collection("users").doc(email).collection("todo").where("priority", isNotEqualTo: null).
-    orderBy("date", descending: false).orderBy("priority", descending: false).withConverter( // 날짜 및 우선 순위 정렬 순으로 Todo 클래스로 변환
-      fromFirestore: Todo.fromFirestore,
-      toFirestore: (Todo todo, _) => todo.toFirestore(),
+  Future<List<Todo>?> getTodoList(String email) async {
+    final ref = store.collection("users").doc(email).collection("todo")
+        .where("priority", isNotEqualTo: null)
+        .orderBy("date", descending: false)
+        .orderBy("priority", descending: false)
+        .withConverter(
+      fromFirestore: (snapshot, options) => Todo.fromFirestore(snapshot, options),
+      toFirestore: (todo, options) => todo.toFirestore(),
     );
 
     final querySnapshot = await ref.get();
-    final todoList = querySnapshot.docs.map((doc) => doc.data()!).toList();
-    if(todoList != null){
-      print('todolist 불러오기 성공'); // await 문이므로 확인용으로 print
+    final todoList = querySnapshot.docs.map((doc) => doc.data()).toList();
+
+    if (todoList.isNotEmpty) {
+      print('todolist 불러오기 성공');
+      // 쿼리 결과 출력
+      for (var todo in todoList) {
+        print('Todo: ${todo.name}, Priority: ${todo.priority}');
+      }
       return todoList;
     } else {
-      print('todolist 없음'); // await 문이므로 확인용으로 print
+      print('todolist 또 없음s');
       return null;
     }
   }

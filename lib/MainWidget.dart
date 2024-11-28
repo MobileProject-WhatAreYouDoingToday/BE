@@ -3,42 +3,64 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:whatareyoudoingtoday/store.dart';
 
-
 import 'auth.dart';
 import 'calendar.dart';
 import 'list.dart';
 
-class MainWidget extends StatelessWidget {
+class MainWidget extends StatefulWidget {
   final Auth auth;
-  late String? email;
-  late List<Todo>? todoList;
+
   MainWidget({required this.auth});
 
-  Future<void> getTodoList() async {
-    email = auth.userCredential?.user?.email;
-    todoList = await Store().getTodoList(email!);
+  @override
+  _MainWidgetState createState() => _MainWidgetState();
+}
 
-    print(todoList?[0].priority);
+class _MainWidgetState extends State<MainWidget> {
+  String? email;
+  List<Todo>? todoList;
+  double progressValue = 0.8;
+  int progressPercentage = 80;
+  Store store = Store();
+
+  @override
+  void initState() {
+    super.initState();
+    getTodoList();
   }
 
+  Future<void> getTodoList() async {
+    email = widget.auth.userCredential?.user?.email;
+    todoList = await store.getTodoList(email!);
+
+    setState(() {
+      if (todoList == null || todoList!.isEmpty) {
+        progressValue = 0.0;
+        progressPercentage = (progressValue * 100).round(); // 퍼센트로 변환
+      } else {
+        int checked = 0;
+        for(int i=0;i<todoList!.length;i++){
+          if(todoList![i].is_completed){
+            checked++;
+          }
+        }
+        progressValue = checked/todoList!.length;
+        progressPercentage = (progressValue * 100).round(); // 퍼센트로 변환
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     DateTime now = DateTime.now();
     DateTime today = DateTime(now.year, now.month, now.day);
     Timestamp timestamp = Timestamp.fromDate(today);
-    getTodoList();
-
-    double progressValue = 0.8; //진행상태
-    int progressPercentage = (progressValue * 100).round(); //퍼센트로 변환
 
     String formattedDate = DateFormat('MMMM dd, EEEE').format(DateTime.now());
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-
         preferredSize: Size.fromHeight(125.0),
-
         child: Padding(
           padding: EdgeInsets.only(left: 25.0, top: 40.0),
           child: AppBar(
@@ -78,11 +100,9 @@ class MainWidget extends StatelessWidget {
           ),
         ),
       ),
-
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-
           Text(
             // timestamp as String,  // 오늘 날짜와 시간이 자동으로 표시됩니다
             formattedDate,
@@ -99,7 +119,6 @@ class MainWidget extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               SizedBox(
-
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
@@ -141,9 +160,9 @@ class MainWidget extends StatelessWidget {
           ),
           SizedBox(height: 40),
           Text(
-            progressValue == 1.0 ? '모두 달성했어요!': '아직 달성하지 못했어요!',
+            progressValue == 1.0 ? '모두 달성했어요!' : '아직 달성하지 못했어요!',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.orange,
             ),
@@ -154,10 +173,10 @@ class MainWidget extends StatelessWidget {
             padding: EdgeInsets.all(25),
             child: Row(
               children: [
-                Checkbox(value: false, onChanged: (value) {}),
+                Checkbox(value: todoList![0].is_completed, onChanged: (value) {}),
                 SizedBox(width: 10),
                 Text(
-                  '미용실 가기',
+                  todoList![0].name,
                   style: TextStyle(fontSize: 16),
                 ),
               ],
