@@ -9,12 +9,11 @@ import 'calendar.dart';
 import 'list.dart';
 
 class MainWidget extends StatelessWidget {
-  final Auth auth;
-  const MainWidget({required this.auth});
+  final String email;
+  const MainWidget({required this.email});
 
   @override
   Widget build(BuildContext context) {
-    // String? email = auth.userCredential?.user?.email;
     // DateTime now = DateTime.now();
     // DateTime today = DateTime(now.year, now.month, now.day);
     // Timestamp timestamp = Timestamp.fromDate(today);

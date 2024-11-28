@@ -14,21 +14,21 @@ class Auth { // 계정 정보를 담는 클래스
   UserCredential? userCredential;
 
 
-  Future<bool> logIn(String email, String password) async { // 로그인을 할 경우 userCredintial로 로그인한 계정 정보를 저장함.
-    bool b;
+  Future<String?> logIn(String email, String password) async { // 로그인을 할 경우 userCredintial로 로그인한 계정 정보를 저장함.
+    String? cEmail;
     try {
       userCredential = await auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      b = true;
       print("로그인 성공함: ${userCredential?.user?.email}");
+      cEmail = userCredential?.user?.email;
     } catch (e) {
       print("로그인 실패함: $e");
-      b = false;
+      cEmail = null;
     }
 
-    return b;
+    return cEmail;
   }
 
   Future<void> signIn(String email, String name, String pw) async { // 회원가입을 하고 파이어스토어 문서를 생성함
@@ -140,8 +140,9 @@ class LoginWidget extends StatelessWidget { // 로그인 화면
                       );
                     }
                     else{
-                      if(await authe.logIn(emailController.text, pwController.text) == true){ //로그인 메소드
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => MainWidget(auth: authe)));
+                      Future<String?> cEmail;
+                      if((cEmail =  authe.logIn(emailController.text, pwController.text)) != null){ //로그인 메소드
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => MainWidget(email: cEmail)));
                       }
                     }
                   },
