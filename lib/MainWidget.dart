@@ -5,6 +5,7 @@ import 'package:whatareyoudoingtoday/store.dart';
 
 
 import 'auth.dart';
+import 'calendar.dart';
 import 'list.dart';
 
 class MainWidget extends StatelessWidget {
@@ -13,12 +14,13 @@ class MainWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String? email = auth.userCredential?.user?.email;
-    DateTime now = DateTime.now();
-    DateTime today = DateTime(now.year, now.month, now.day);
-    Timestamp timestamp = Timestamp.fromDate(today);
+    // String? email = auth.userCredential?.user?.email;
+    // DateTime now = DateTime.now();
+    // DateTime today = DateTime(now.year, now.month, now.day);
+    // Timestamp timestamp = Timestamp.fromDate(today);
     // UserData user = Store().getUser(email!) as UserData;
-    List<Todo> todoList = Store().getTodoList(email!) as List<Todo>;
+    // List<Todo>? todoList = Store().getTodoList(email!) as List<Todo>;
+    String formattedDate = DateFormat('MMMM dd, EEEE').format(DateTime.now());
     double progressValue = 0.8; //진행상태
     int progressPercentage = (progressValue * 100).round(); //퍼센트로 변환
     return Scaffold(
@@ -42,7 +44,7 @@ class MainWidget extends StatelessWidget {
               child: Container(
                 width: 60.0,
                 height: 60.0,
-                child: Image.asset("assets/images/todolist.png"),
+                child: Image.asset("assets/images/todobutton.png"),
               ),
             ),
             actions: [
@@ -52,7 +54,7 @@ class MainWidget extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => TodoListPage()),
+                      MaterialPageRoute(builder: (context) => CalendarPage()),
                     );
                   },
                   child: Container(
@@ -72,7 +74,8 @@ class MainWidget extends StatelessWidget {
         children: [
 
           Text(
-            timestamp as String,  // 오늘 날짜와 시간이 자동으로 표시됩니다
+            // timestamp as String,  // 오늘 날짜와 시간이 자동으로 표시됩니다
+            formattedDate,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 10),

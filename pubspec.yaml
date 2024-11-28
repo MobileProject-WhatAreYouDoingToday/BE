@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_email_sender: ^6.0.3 # 이메일 보내는 라이브러리 일단 함 해보긴 함
+  table_calendar:
   intl: ^0.17.0
   flutter_time_picker_spinner: ^2.0.0
 

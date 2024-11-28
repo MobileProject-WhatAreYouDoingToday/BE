@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:whatareyoudoingtoday/task.dart';
 
 /*
 * users라는 컬렉션에 각 user의 문서를 배치함 이 때, uid보다 email로 접근하는 것이 더 나을 것 같음. 추후에 이메일로 비밀번호를 바꾸는 기능을 추가하기 위함.
@@ -57,6 +58,7 @@ class Todo {
   final bool isNotification; // todo 알림여부
   late final int priority; // todo 우선순위, 오늘의 달성률에서 맨위에 있는거 보이게 하는용도
   final bool is_completed; //todo 완료여부
+  final Task task;
 
   Todo({
     required this.name,
@@ -65,7 +67,8 @@ class Todo {
     required this.isNotification,
     required this.priority,
     required this.is_completed,
-    required this.description
+    required this.description,
+    required this.task
   });
 
   factory Todo.fromFirestore(
@@ -80,7 +83,8 @@ class Todo {
       isNotification: data?['isNotification'],
       priority: data?['priority'],
       is_completed : data?['is_completed'],
-      description: data?['description']
+      description: data?['description'],
+      task: data?['task']
     );
   }
 
