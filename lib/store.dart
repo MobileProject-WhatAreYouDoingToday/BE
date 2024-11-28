@@ -131,7 +131,7 @@ class Store {
       final userData = UserData(name: name, uid: uid, pw: pw);
       await ref.set(userData);
       final todoListRef = store.collection("users").doc(email).collection("todo");
-      await todoListRef.doc("placeholder").set({'placeholder': true});
+      await todoListRef.doc("placeholder").set({'placeholder': true, 'priority': null});
       print('유저 데이터 생성 성공'); // await 문이므로 확인용으로 print
     } else {
       final userData = UserData(name: name, uid: uid, pw: pw);
@@ -141,7 +141,7 @@ class Store {
   }
 
   Future<List<Todo>?> getTodoList(String email) async { // todolist 불러오기
-    final ref = store.collection("users").doc(email).collection("todo").
+    final ref = store.collection("users").doc(email).collection("todo").where("priority", isNotEqualTo: null).
     orderBy("date", descending: false).orderBy("priority", descending: false).withConverter( // 날짜 및 우선 순위 정렬 순으로 Todo 클래스로 변환
       fromFirestore: Todo.fromFirestore,
       toFirestore: (Todo todo, _) => todo.toFirestore(),

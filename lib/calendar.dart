@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
-import 'package:whatareyoudoingtoday/MainWidget.dart';
 
-import 'auth.dart';
 import 'list.dart';
 
 class Calendar extends StatelessWidget {
-  final Auth auth;
-  const Calendar({super.key, required this.auth});
+  const Calendar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +78,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MainWidget(auth: auth)),
+                    MaterialPageRoute(builder: (context) => TodoListPage()),
                   );
                 },
                 child: Container(

@@ -9,19 +9,30 @@ import 'calendar.dart';
 import 'list.dart';
 
 class MainWidget extends StatelessWidget {
-  final String email;
-  const MainWidget({required this.email});
+  final Auth auth;
+  late String? email;
+  late List<Todo>? todoList;
+  MainWidget({required this.auth});
+
+  Future<void> getTodoList() async {
+    email = auth.userCredential?.user?.email;
+    todoList = await Store().getTodoList(email!);
+
+    print(todoList?[0].priority);
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    // DateTime now = DateTime.now();
-    // DateTime today = DateTime(now.year, now.month, now.day);
-    // Timestamp timestamp = Timestamp.fromDate(today);
-    // UserData user = Store().getUser(email!) as UserData;
-    // List<Todo>? todoList = Store().getTodoList(email!) as List<Todo>;
-    String formattedDate = DateFormat('MMMM dd, EEEE').format(DateTime.now());
+    DateTime now = DateTime.now();
+    DateTime today = DateTime(now.year, now.month, now.day);
+    Timestamp timestamp = Timestamp.fromDate(today);
+    getTodoList();
+
     double progressValue = 0.8; //진행상태
     int progressPercentage = (progressValue * 100).round(); //퍼센트로 변환
+
+    String formattedDate = DateFormat('MMMM dd, EEEE').format(DateTime.now());
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
