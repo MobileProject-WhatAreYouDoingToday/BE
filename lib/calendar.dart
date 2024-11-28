@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
+import 'list.dart';
+
 class Calendar extends StatelessWidget {
   const Calendar({super.key});
 
@@ -63,44 +65,53 @@ class _CalendarPageState extends State<CalendarPage> {
       width: 375, // 고정된 너비
       height: 812, // 고정된 높이
       child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween, // 양쪽 정렬
-            children: [
-              GestureDetector(
+        backgroundColor: Colors.white,
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(125.0),
+          child: Padding(
+            padding: EdgeInsets.only(left: 25.0, top: 40.0),
+            child: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              leading: GestureDetector(
                 onTap: () {
-                  Navigator.pushNamed(context, '/MainWidget'); // MainWidget.dart로 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TodoListPage()),
+                  );
                 },
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 30), // 좌측에서 30만큼 떨어짐
-                  child: Container(
-                    width: 60.0,
-                    height: 60.0,
-                    child: Image.asset("assets/images/chart.png"),
-                  ),
+                child: Container(
+                  width: 60.0,
+                  height: 60.0,
+                  child: Image.asset("assets/images/chart.png"),
                 ),
               ),
-              const Text(
+              title: const Text(
                 '캘린더',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
               ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, '/list'); // list.dart로 이동
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 30), // 우측에서 30만큼 떨어짐
-                  child: Image.asset(
-                    'assets/images/todobutton.png',
-                    height: 30,
-                    width: 30,
+              centerTitle: true, // 제목을 중앙으로 설정
+              actions: [
+                Padding(
+                  padding: EdgeInsets.only(right: 25.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => CalendarPage()),
+                      );
+                    },
+                    child: Container(
+                      width: 60.0,
+                      height: 60.0,
+                      child: Image.asset("assets/images/calender.png"),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          centerTitle: true,
         ),
         body: Stack(
           children: [
