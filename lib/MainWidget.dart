@@ -1,18 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:whatareyoudoingtoday/store.dart';
 
 import 'auth.dart';
 import 'list.dart';
 
 class MainWidget extends StatelessWidget {
   final Auth auth;
-
   const MainWidget({required this.auth});
 
   @override
   Widget build(BuildContext context) {
-    Timestamp timestamp = timestamp(new Date)
+    String? email = auth.userCredential?.user?.email;
+    DateTime now = DateTime.now();
+    DateTime today = DateTime(now.year, now.month, now.day);
+    Timestamp timestamp = Timestamp.fromDate(today);
+    // UserData user = Store().getUser(email!) as UserData;
+    List<Todo> todoList = Store().getTodoList(email!) as List<Todo>;
     double progressValue = 0.8; //진행상태
     int progressPercentage = (progressValue * 100).round(); //퍼센트로 변환
     return Scaffold(
@@ -66,7 +71,7 @@ class MainWidget extends StatelessWidget {
         children: [
 
           Text(
-            formattedDate,  // 오늘 날짜와 시간이 자동으로 표시됩니다
+            timestamp as String,  // 오늘 날짜와 시간이 자동으로 표시됩니다
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 10),
