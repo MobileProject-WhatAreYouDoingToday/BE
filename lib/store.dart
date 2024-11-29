@@ -11,7 +11,7 @@ import 'package:whatareyoudoingtoday/task.dart';
 * */
 
 /*
-* 달성률이나 그런 거는 스토어가 아니라 각 클래스하는 것이 나을 것 같음
+* 달성률은
 *
 *
 *
@@ -35,9 +35,9 @@ class UserData {
       ) {
     final data = snapshot.data();
     return UserData(
-      name: data?['name'],
-      uid: data?['uid'],
-      pw: data?['pw']
+        name: data?['name'],
+        uid: data?['uid'],
+        pw: data?['pw']
     );
   }
 
@@ -52,13 +52,12 @@ class UserData {
 
 class Todo {
   final String name; // todo 제목
-  final String categori; // todo 카테고리
+  final String categori; // 카테고리
   final String description; // todo 메모
   final Timestamp date; //  todo 생성날짜
   final bool isNotification; // todo 알림여부
-  late final int priority; // todo 우선순위, 오늘의 달성률에서 맨위에 있는거 보이게 하는 용도(priorty == 0일 경우)
+  late final int priority; // todo 우선순위, 오늘의 달성률에서 맨위에 있는거 보이게 하는용도
   final bool is_completed; //todo 완료여부
-  final Task task;
 
   Todo({
     required this.name,
@@ -68,7 +67,6 @@ class Todo {
     required this.priority,
     required this.is_completed,
     required this.description,
-    required this.task
   });
 
   factory Todo.fromFirestore(
@@ -84,7 +82,6 @@ class Todo {
       priority: data?['priority'],
       is_completed : data?['is_completed'],
       description: data?['description'],
-      task: data?['task']
     );
   }
 
@@ -131,7 +128,7 @@ class Store {
       final userData = UserData(name: name, uid: uid, pw: pw);
       await ref.set(userData);
       final todoListRef = store.collection("users").doc(email).collection("todo");
-      await todoListRef.doc("placeholder").set({'placeholder': true});
+      await todoListRef.doc("placeholder").set({'placeholder': true, 'priority': null});
       print('유저 데이터 생성 성공'); // await 문이므로 확인용으로 print
     } else {
       final userData = UserData(name: name, uid: uid, pw: pw);
@@ -140,25 +137,33 @@ class Store {
     }
   }
 
-  Future<List<Todo>?> getTodoList(String email) async { // todolist 불러오기
-    final ref = store.collection("users").doc(email).collection("todo").
-    orderBy("date", descending: false).orderBy("priority", descending: false).withConverter( // 날짜 및 우선 순위 정렬 순으로 Todo 클래스로 변환
-      fromFirestore: Todo.fromFirestore,
-      toFirestore: (Todo todo, _) => todo.toFirestore(),
+  Future<List<Todo>?> getTodoList(String email) async {
+    final ref = store.collection("users").doc(email).collection("todo")
+        .where("priority", isNotEqualTo: null)
+        .orderBy("date", descending: false)
+        .orderBy("priority", descending: false)
+        .withConverter(
+      fromFirestore: (snapshot, options) => Todo.fromFirestore(snapshot, options),
+      toFirestore: (todo, options) => todo.toFirestore(),
     );
 
     final querySnapshot = await ref.get();
-    final todoList = querySnapshot.docs.map((doc) => doc.data()!).toList();
-    if(todoList != null){
-      print('todolist 불러오기 성공'); // await 문이므로 확인용으로 print
+    final todoList = querySnapshot.docs.map((doc) => doc.data()).toList();
+
+    if (todoList.isNotEmpty) {
+      print('todolist 불러오기 성공');
+      // 쿼리 결과 출력
+      for (var todo in todoList) {
+        print('Todo: ${todo.name}, Priority: ${todo.priority}');
+      }
       return todoList;
     } else {
-      print('todolist 없음'); // await 문이므로 확인용으로 print
+      print('todolist 또 없음s');
       return null;
     }
   }
 
-  Future<void> setTodoPriorty(String email,Todo updatedTodo, int priority) async{ // 이거는 잘 모르겠음, 여기서 할 지? 아니면 다른 클래스의 메소드에서 할 지
+  Future<void> setTodoPriorty(String email,Todo updatedTodo, int priority) async{
     List<Todo> todoList = getTodoList(email) as List<Todo>;
     int index = todoList.indexWhere((todo) => todo.priority == updatedTodo.priority);
 
