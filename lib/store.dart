@@ -11,7 +11,7 @@ import 'package:whatareyoudoingtoday/task.dart';
 * */
 
 /*
-* 달성률은
+* 달성률이나 그런 거는 스토어가 아니라 각 클래스하는 것이 나을 것 같음
 *
 *
 *
