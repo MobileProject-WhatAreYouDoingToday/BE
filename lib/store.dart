@@ -52,11 +52,11 @@ class UserData {
 
 class Todo {
   final String name; // todo 제목
-  final String categori; // 카테고리
+  final String categori; // todo 카테고리
   final String description; // todo 메모
   final Timestamp date; //  todo 생성날짜
   final bool isNotification; // todo 알림여부
-  late final int priority; // todo 우선순위, 오늘의 달성률에서 맨위에 있는거 보이게 하는용도
+  late final int priority; // todo 우선순위, 오늘의 달성률에서 맨위에 있는거 보이게 하는 용도(priorty == 0일 경우)
   final bool is_completed; //todo 완료여부
   final Task task;
 
@@ -158,7 +158,7 @@ class Store {
     }
   }
 
-  Future<void> setTodoPriorty(String email,Todo updatedTodo, int priority) async{
+  Future<void> setTodoPriorty(String email,Todo updatedTodo, int priority) async{ // 이거는 잘 모르겠음, 여기서 할 지? 아니면 다른 클래스의 메소드에서 할 지
     List<Todo> todoList = getTodoList(email) as List<Todo>;
     int index = todoList.indexWhere((todo) => todo.priority == updatedTodo.priority);
 
