@@ -164,30 +164,19 @@ class Store {
     }
   }
 
-  Future<List<Todo>?> getSelectedDateTodoList(String email, Timestamp selectedDate) async {
-    final ref = store.collection("users").doc(email).collection("todo")
-        .where("priority", isNotEqualTo: null)
-        .where("date", isEqualTo: selectedDate)
-        .orderBy("priority", descending: false)
-        .withConverter(
-      fromFirestore: (snapshot, options) => Todo.fromFirestore(snapshot, options),
-      toFirestore: (todo, options) => todo.toFirestore(),
-    );
+  Future<List<Todo>?> getSelectedDateTodoList(String email, Timestamp select) async {
+    List<Todo> todoList = getTodoList(email) as List<Todo>;
+    List<Todo> tasks = [];
 
-    final querySnapshot = await ref.get();
-    final todoList = querySnapshot.docs.map((doc) => doc.data()).toList();
-
-    if (todoList.isNotEmpty) {
-      print('todolist 불러오기 성공');
-      // 쿼리 결과 출력
-      for (var todo in todoList) {
-        print('Todo: ${todo.name}, Priority: ${todo.priority}');
+    DateTime selectedDate = select.toDate();
+    for(int i =0;i<todoList.length;i++){
+      DateTime ListDate = todoList[i].date.toDate();
+      if(ListDate.year == selectedDate.year && ListDate.month == selectedDate.month && ListDate.day == selectedDate.day){
+        tasks.add(todoList[i]);
       }
-      return todoList;
-    } else {
-      print('todolist 또 없음s');
-      return todoList;
     }
+
+
   }
 
 

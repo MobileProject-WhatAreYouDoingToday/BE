@@ -283,6 +283,7 @@ class _CreationPageState extends State<CreationPage> {
       onTap: () {
         setState(() {
           selectedCategory = index; // 선택된 카테고리 인덱스 업데이트
+
         });
       },
       child: Opacity(
