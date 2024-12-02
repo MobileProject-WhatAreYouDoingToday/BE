@@ -13,7 +13,7 @@ import 'package:whatareyoudoingtoday/task.dart';
 /*
 * 달성률은
 *
-*
+* 카테고리
 *
 *
 * */
@@ -57,7 +57,7 @@ class Todo {
   final Timestamp date; //  todo 생성날짜
   final bool isNotification; // todo 알림여부
   late final int priority; // todo 우선순위, 오늘의 달성률에서 맨위에 있는거 보이게 하는용도
-  final bool is_completed; //todo 완료여부
+  late final bool is_completed; //todo 완료여부
 
   Todo({
     required this.name,
@@ -159,7 +159,7 @@ class Store {
       return todoList;
     } else {
       print('todolist 또 없음s');
-      return null;
+      return todoList;
     }
   }
 
