@@ -40,11 +40,11 @@ class _CalendarPageState extends State<CalendarPage> {
   List<Todo> todoList = [];
 
   @override
-  Future<void> initState() async {
+  void initState() {
     super.initState();
     _focusedDay = DateTime.now();
     _selectedDay = _focusedDay;
-    todoList = (await Store().getTodoList(email))!;
+    getTodoList();
 
 
     // 샘플 데이터로 이벤트 초기화
@@ -63,6 +63,10 @@ class _CalendarPageState extends State<CalendarPage> {
     };
 
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay));
+  }
+
+  Future<void> getTodoList() async {
+    todoList = (await Store().getTodoList(email))!;
   }
 
   List<Event> _getEventsForDay(DateTime day) {
