@@ -13,15 +13,18 @@ class MainWidget extends StatefulWidget {
   MainWidget({required this.auth});
 
   @override
-  _MainWidgetState createState() => _MainWidgetState();
+  _MainWidgetState createState() => _MainWidgetState(auth);
 }
 
 class _MainWidgetState extends State<MainWidget> {
+  final Auth auth;
   String email = "";
   List<Todo> todoList = [];
   late double progressValue = 0.0;
   late int progressPercentage = 0;
   Store store = Store();
+
+  _MainWidgetState(this.auth);
 
   @override
   void initState() {
@@ -74,7 +77,7 @@ class _MainWidgetState extends State<MainWidget> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => TodoListPage()),
+                  MaterialPageRoute(builder: (context) => TodoListPage(auth: auth,)),
                 );
               },
               child: Container(

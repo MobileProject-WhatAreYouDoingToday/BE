@@ -1,31 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:whatareyoudoingtoday/MainWidget.dart';
+import 'auth.dart';
 import 'creation.dart';
 import 'process.dart' as process;
 import 'store.dart'; // Todo 클래스를 포함한 task.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TodoListPage extends StatefulWidget {
+  final Auth auth;
+
+  const TodoListPage({super.key, required this.auth});
+
   @override
-  _TodoListPageState createState() => _TodoListPageState();
+  _TodoListPageState createState() => _TodoListPageState(auth);
 }
 
 class _TodoListPageState extends State<TodoListPage> {
-  DateTime selectedDate = DateTime.now();
+  final Auth auth;
+
   List<Todo> tasks = []; // Todo 클래스를 사용하는 리스트
   List<bool> isMemoVisible = [];
+  DateTime selectday = DateTime(0,0,0,0);
+  Timestamp timestamp = Timestamp(0, 0);
+  String email = "";
+
+  _TodoListPageState(this.auth);
 
   @override
   void initState() {
     super.initState();
+    email = auth.userCredential!.user!.email!;
+    DateTime now = DateTime.now();
+    selectday = DateTime(now.year, now.month, now.day);
+    timestamp = Timestamp.fromDate(selectday);
+
     _loadTasks(); // 초기화 시 할 일 목록 로드
   }
 
+
   // Firestore에서 할 일 목록을 로드하는 메서드
   Future<void> _loadTasks() async {
-    String email = "2171322@hansung.ac.kr"; // 예시: 이메일을 사용자 이메일로 대체
     Store store = Store();
-    List<Todo>? todoList = await store.getTodoList(email);
+    List<Todo>? todoList = await store.getSelectedDateTodoList(email, timestamp);
     if (todoList != null) {
       setState(() {
         tasks = todoList;
@@ -36,13 +53,16 @@ class _TodoListPageState extends State<TodoListPage> {
 
   void _prevDate() {
     setState(() {
-      selectedDate = selectedDate.subtract(Duration(days: 1));
+      selectday = selectday.subtract(Duration(days: 1));
+      timestamp = Timestamp.fromDate(selectday);
     });
   }
 
   void _nextDate() {
     setState(() {
-      selectedDate = selectedDate.add(Duration(days: 1));
+      selectday = selectday.add(Duration(days: 1));
+      timestamp = Timestamp.fromDate(selectday);
+
     });
   }
 
@@ -68,7 +88,7 @@ class _TodoListPageState extends State<TodoListPage> {
   void _navigateToCreationPage() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CreationPage()),
+      MaterialPageRoute(builder: (context) => CreationPage(email: email,)),
     );
 
     if (result != null && result['todo'] != null) {
@@ -80,7 +100,7 @@ class _TodoListPageState extends State<TodoListPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => process.ProcessScreen(tasks: tasks),
+        builder: (context) => MainWidget(auth: auth),
       ),
     );
   }
@@ -145,7 +165,7 @@ class _TodoListPageState extends State<TodoListPage> {
                 ),
                 SizedBox(width: 50),
                 Text(
-                  DateFormat('yyyy.MM.dd').format(selectedDate),
+                  DateFormat('yyyy.MM.dd').format(selectday),
                   style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(width: 50),

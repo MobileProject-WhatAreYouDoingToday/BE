@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'auth.dart';
 import 'store.dart'; // Todo 클래스를 포함한 task.dart
 import 'list.dart';
 
 class ProcessScreen extends StatelessWidget {
   final List<Todo> tasks; // Todo 모델은 체크리스트 항목을 나타냅니다.
+  final Auth auth;
 
-  ProcessScreen({required this.tasks});
+  ProcessScreen({required this.tasks, required this.auth});
 
   @override
   Widget build(BuildContext context) {
+    String email = auth.userCredential!.user!.email!;
     int totalTasks = tasks.length;
     int completedTasks = tasks.where((todo) => todo.is_completed).length; // is_completed 필드 사용
     double achievementRate =
@@ -39,7 +42,7 @@ class ProcessScreen extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => TodoListPage(), // list.dart로 이동
+                builder: (context) => TodoListPage(auth: auth,), // list.dart로 이동
               ),
             );
           },

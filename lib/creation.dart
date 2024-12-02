@@ -1,21 +1,29 @@
 import 'package:flutter/material.dart';
+import 'auth.dart';
 import 'timesetting.dart'; // 시간 설정 화면을 위한 파일 임포트
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'store.dart'; // Todo 클래스를 포함한 task.dart
 import 'notification_service.dart';
 
 class CreationPage extends StatefulWidget {
+  final String email;
+
+  const CreationPage({super.key, required this.email});
+
   @override
-  _CreationPageState createState() => _CreationPageState();
+  _CreationPageState createState() => _CreationPageState(email);
 }
 
 class _CreationPageState extends State<CreationPage> {
+  final String email;
   String taskTitle = '';
   String taskMemo = '';
   bool isNotificationOn = false;
   TimeOfDay selectedTime = TimeOfDay.now();
   int? selectedCategory; // nullable 변수
-  int? reminderTime; // 알림 시간 변수 추가
+  int? reminderTime;
+
+  _CreationPageState(this.email); // 알림 시간 변수 추가
 
   void _saveTask() {
     if (taskTitle.isNotEmpty) {
@@ -47,8 +55,11 @@ class _CreationPageState extends State<CreationPage> {
           NotificationService.showNotification('할 일 알림', '할 일이 있습니다: $taskTitle');
         }
       }
+      print(newTodo.date);
+      Store().getSelectedDateTodoList(email, newTodo.date);
       // Todo 객체를 반환
       Navigator.pop(context, {'todo': newTodo, 'selectedTime': selectedTime, 'reminderTime': reminderTime});
+      Store().setTodo(email, newTodo);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('할 일 제목을 입력해주세요.')),
