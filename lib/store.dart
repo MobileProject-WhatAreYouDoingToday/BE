@@ -163,6 +163,33 @@ class Store {
     }
   }
 
+  Future<List<Todo>?> getSelectedDateTodoList(String email, Timestamp selectedDate) async {
+    final ref = store.collection("users").doc(email).collection("todo")
+        .where("priority", isNotEqualTo: null)
+        .where("date", isEqualTo: selectedDate)
+        .orderBy("priority", descending: false)
+        .withConverter(
+      fromFirestore: (snapshot, options) => Todo.fromFirestore(snapshot, options),
+      toFirestore: (todo, options) => todo.toFirestore(),
+    );
+
+    final querySnapshot = await ref.get();
+    final todoList = querySnapshot.docs.map((doc) => doc.data()).toList();
+
+    if (todoList.isNotEmpty) {
+      print('todolist 불러오기 성공');
+      // 쿼리 결과 출력
+      for (var todo in todoList) {
+        print('Todo: ${todo.name}, Priority: ${todo.priority}');
+      }
+      return todoList;
+    } else {
+      print('todolist 또 없음s');
+      return todoList;
+    }
+  }
+
+
   Future<void> setTodoPriorty(String email,Todo updatedTodo, int priority) async{
     List<Todo> todoList = getTodoList(email) as List<Todo>;
     int index = todoList.indexWhere((todo) => todo.priority == updatedTodo.priority);
