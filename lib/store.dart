@@ -201,15 +201,24 @@ class Store {
     );
 
     try {
-      if(ref.doc("placeholder") != null){
-        ref.doc("placeholder").delete();
+      // 기존 항목 검색
+      final querySnapshot = await ref.where('name', isEqualTo: todo.name).get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // 기존 항목이 있으면 업데이트
+        final docRef = querySnapshot.docs.first.reference;
+        await docRef.set(todo);
+        print('Todo 업데이트 성공');
+      } else {
+        // 기존 항목이 없으면 새 항목 추가
+        await ref.add(todo);
+        print('Todo 추가 성공');
       }
-      await ref.add(todo);
-      print('Todo 추가 성공');
     } catch (e) {
-      print('Todo 추가 실패: $e');
+      print('Todo 처리 실패: $e');
     }
   }
+
 
 
   Future<Todo?> getTodo(String email, Timestamp date, String category, int priority) async { // 특정 todo 불러오기

@@ -208,7 +208,7 @@ class _TodoListPageState extends State<TodoListPage> {
                 onReorder: _onReorder,
                 itemBuilder: (context, index) {
                   return Dismissible(
-                    key: Key(tasks[index].name),
+                    key: ValueKey('${tasks[index].name}_$index'), // 고유 키 설정
                     background: Container(
                       color: Color(0x80FC0404),
                       child: Align(
@@ -233,7 +233,6 @@ class _TodoListPageState extends State<TodoListPage> {
                       );
                     },
                     child: Column(
-                      key: ValueKey(tasks[index].name), // 고유 키 설정
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
