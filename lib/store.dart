@@ -176,7 +176,7 @@ class Store {
       }
     }
 
-
+    return tasks;
   }
 
 
