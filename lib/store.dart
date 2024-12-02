@@ -109,7 +109,7 @@ class Store {
     final docSnap = await ref.get();
     final user = docSnap.data();
     if (user != null) {
-      print('유저 데이터 불러오기 성공'); // await 문이므로 확인용으로 print
+
       return user;
     } else {
       print('유저 정보가 없음'); // await 문이므로 확인용으로 print
@@ -152,14 +152,11 @@ class Store {
     final todoList = querySnapshot.docs.map((doc) => doc.data()).toList();
 
     if (todoList.isNotEmpty) {
-      print('todolist 불러오기 성공');
       // 쿼리 결과 출력
-      for (var todo in todoList) {
-        print('Todo: ${todo.name}, Priority: ${todo.priority}');
-      }
+      print('전체 todolist 불러오기 성공');
       return todoList;
     } else {
-      print('todolist 또 없음s');
+      print('todolist 없음');
       return todoList;
     }
   }

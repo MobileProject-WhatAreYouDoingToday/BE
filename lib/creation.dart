@@ -25,7 +25,7 @@ class _CreationPageState extends State<CreationPage> {
 
   _CreationPageState(this.email); // 알림 시간 변수 추가
 
-  void _saveTask() {
+  Future<void> _saveTask() async {
     if (taskTitle.isNotEmpty) {
       // Todo 객체 생성
       Todo newTodo = Todo(
@@ -55,7 +55,16 @@ class _CreationPageState extends State<CreationPage> {
         }
       }
       print(newTodo.date);
-      Store().getSelectedDateTodoList(email, newTodo.date);
+      List<Todo>? todoList = await Store().getSelectedDateTodoList(email, newTodo.date);
+      int lastP=0;
+
+      for(int i=0;i<todoList!.length;i++){
+        if(todoList[i].priority>lastP && todoList[i].is_completed == false){
+          lastP = todoList[i].priority + 1;
+        }
+      }
+      newTodo.priority = lastP;
+
       // Todo 객체를 반환
       Navigator.pop(context, {'todo': newTodo, 'selectedTime': selectedTime, 'reminderTime': reminderTime});
       Store().setTodo(email, newTodo);
