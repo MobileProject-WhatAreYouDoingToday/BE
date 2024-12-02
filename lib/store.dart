@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:whatareyoudoingtoday/task.dart';
 
 /*
 * users라는 컬렉션에 각 user의 문서를 배치함 이 때, uid보다 email로 접근하는 것이 더 나을 것 같음. 추후에 이메일로 비밀번호를 바꾸는 기능을 추가하기 위함.
@@ -91,7 +90,9 @@ class Todo {
       if (categori != null) 'categori': categori,
       if (date != null) 'date': date,
       if (isNotification != null) 'isNotification': isNotification,
-      if (priority != null) 'priority': priority
+      if (priority != null) 'priority': priority,
+      if (is_completed != null) 'is_completed': is_completed,
+      if (description != null) 'description': description,
     };
   }
 }
