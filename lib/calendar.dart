@@ -119,7 +119,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     child: Container(
                       width: 60.0,
                       height: 60.0,
-                      child: Image.asset("assets/images/calender.png"),
+                      child: Image.asset("assets/images/todobutton.png"),
                     ),
                   ),
                 ),

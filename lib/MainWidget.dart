@@ -74,7 +74,7 @@ class _MainWidgetState extends State<MainWidget> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginWidget()),
+                  MaterialPageRoute(builder: (context) => TodoListPage()),
                 );
               },
               child: Container(
