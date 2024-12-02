@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
-
 import 'list.dart';
 
 class Calendar extends StatelessWidget {
@@ -38,6 +37,7 @@ class _CalendarPageState extends State<CalendarPage> {
     _focusedDay = DateTime.now();
     _selectedDay = _focusedDay;
 
+    // 샘플 데이터로 이벤트 초기화
     _events = <DateTime, List<Event>>{
       DateTime(2024, 10, 1): [
         Event("독서", const Color(0xFFFF9692)),
@@ -132,26 +132,46 @@ class _CalendarPageState extends State<CalendarPage> {
                     },
                     eventLoader: _getEventsForDay,
                     calendarStyle: const CalendarStyle(
-                      todayDecoration: BoxDecoration(), // 오늘의 데코레이션 제거 (숫자는 유지)
-                      selectedDecoration: BoxDecoration(), // 선택된 날짜 데코레이션 제거
+                      todayDecoration: BoxDecoration(),
+                      selectedDecoration: BoxDecoration(),
+                      todayTextStyle: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      selectedTextStyle: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      defaultTextStyle: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      weekendTextStyle: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      disabledTextStyle: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
                       markerDecoration: BoxDecoration(
-                        color: Colors.red,
+                        color: Colors.white,
                         shape: BoxShape.circle,
                       ),
-                      cellMargin: EdgeInsets.symmetric(vertical: 8), // 날짜 간 간격 설정
+                      cellMargin: EdgeInsets.symmetric(vertical: 8),
                     ),
                     headerStyle: HeaderStyle(
                       formatButtonVisible: false,
                       titleCentered: true,
                       titleTextFormatter: (date, locale) =>
-                          DateFormat.MMMM(locale).format(date), // 년도 제거
+                          DateFormat.MMMM(locale).format(date),
                     ),
-                    daysOfWeekHeight: 55, // 요일과 날짜 사이 간격
-                    rowHeight: 80, // 각 날짜 간의 간격 설정
+                    daysOfWeekHeight: 55,
+                    rowHeight: 80,
                     calendarBuilders: CalendarBuilders(
                       markerBuilder: (context, date, events) {
                         if (events.isNotEmpty) {
-                          final eventList = events.cast<Event>(); // events를 Event 타입으로 캐스팅
+                          final eventList = events.cast<Event>();
                           return Column(
                             children: eventList.map((event) {
                               return Container(
@@ -184,14 +204,14 @@ class _CalendarPageState extends State<CalendarPage> {
                       return Column(
                         children: events
                             .map((event) => ListTile(
-                                  title: Text(
-                                    event.title,
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ))
+                          title: Text(
+                            event.title,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ))
                             .toList(),
                       );
                     },
@@ -200,8 +220,8 @@ class _CalendarPageState extends State<CalendarPage> {
               ),
             ),
             Positioned(
-              bottom: 40, // 하단에서 40 떨어짐
-              left: MediaQuery.of(context).size.width / 2 - 327 / 2, // 중앙 정렬
+              bottom: 40,
+              left: MediaQuery.of(context).size.width / 2 - 327 / 2,
               child: SizedBox(
                 width: 327,
                 height: 60,
@@ -234,3 +254,4 @@ class Event {
   final Color color;
   Event(this.title, this.color);
 }
+
