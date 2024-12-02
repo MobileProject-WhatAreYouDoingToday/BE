@@ -42,20 +42,35 @@ class _TodoListPageState extends State<TodoListPage> {
   // Firestore에서 할 일 목록을 로드하는 메서드
   Future<void> _loadTasks() async {
     Store store = Store();
-    List<Todo>? todoList = await store.getSelectedDateTodoList(email, timestamp);
-    print(todoList![0].name);
+    List<Todo>? todoList = await store.getTodoList(email);
+
+    print("todolist 크기 = ${todoList?.length}");
+
     if (todoList != null) {
+      // tasks 리스트 초기화
       setState(() {
-        isMemoVisible = List<bool>.filled(tasks.length, false); // tasks의 길이에 맞게 초기화
+        tasks.clear(); // 기존의 tasks 리스트를 초기화
+        isMemoVisible = List<bool>.filled(todoList.length, false).toList(); // 고정 길이 리스트를 가변 길이 리스트로 변환
       });
+
+      for (int i = 0; i < todoList.length; i++) {
+        DateTime listDate = todoList[i].date.toDate();
+        if (listDate.year == selectday.year &&
+            listDate.month == selectday.month &&
+            listDate.day == selectday.day) {
+          _addTask(todoList[i]);
+        }
+      }
     }
   }
+
 
   void _prevDate() {
     setState(() {
       selectday = selectday.subtract(Duration(days: 1));
       timestamp = Timestamp.fromDate(selectday);
-      _loadTasks();
+      tasks = [];
+      _loadTasks(); // 초기화 시 할 일 목록 로드
     });
   }
 
@@ -63,7 +78,8 @@ class _TodoListPageState extends State<TodoListPage> {
     setState(() {
       selectday = selectday.add(Duration(days: 1));
       timestamp = Timestamp.fromDate(selectday);
-      _loadTasks();
+      tasks = [];
+      _loadTasks(); // 초기화 시 할 일 목록 로드
     });
   }
 
@@ -79,8 +95,7 @@ class _TodoListPageState extends State<TodoListPage> {
     setState(() {
       tasks.add(task);
       isMemoVisible.add(false);
-      Store store = Store();
-      store.setTodo(email, task);
+      print(task.name + '추가됨');
     });
   }
 

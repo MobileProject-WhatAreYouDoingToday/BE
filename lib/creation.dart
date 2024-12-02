@@ -59,8 +59,9 @@ class _CreationPageState extends State<CreationPage> {
       int lastP=0;
 
       for(int i=0;i<todoList!.length;i++){
-        if(todoList[i].priority>lastP && todoList[i].is_completed == false){
+        if(todoList[i].priority==lastP){
           lastP = todoList[i].priority + 1;
+          print('라스트p는 {$lastP}');
         }
       }
       newTodo.priority = lastP;
