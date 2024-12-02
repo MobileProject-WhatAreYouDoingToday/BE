@@ -1,22 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'list.dart';
-
-class Calendar extends StatelessWidget {
-  const Calendar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Calendar Example',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const CalendarPage(),
-    );
-  }
-}
+import 'store.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -27,223 +15,100 @@ class CalendarPage extends StatefulWidget {
 
 class _CalendarPageState extends State<CalendarPage> {
   late final ValueNotifier<List<Event>> _selectedEvents;
-  late final Map<DateTime, List<Event>> _events;
   late DateTime _focusedDay;
   late DateTime _selectedDay;
+  final Store _store = Store(); // Access the Firestore store
 
   @override
   void initState() {
     super.initState();
     _focusedDay = DateTime.now();
     _selectedDay = _focusedDay;
-
-    // 샘플 데이터로 이벤트 초기화
-    _events = <DateTime, List<Event>>{
-      DateTime(2024, 10, 1): [
-        Event("독서", const Color(0xFFFF9692)),
-        Event("공부", const Color(0xFF61E4C5))
-      ],
-      DateTime(2024, 10, 2): [
-        Event("취미", const Color(0xFFDBBEFC)),
-        Event("운동", const Color(0xFFFFD465))
-      ],
-      DateTime(2024, 10, 3): [
-        Event("독서", const Color(0xFFFF9692)),
-      ],
-    };
-
-    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay));
+    _selectedEvents = ValueNotifier([]);
+    _loadEventsForDay(_selectedDay);
   }
 
-  List<Event> _getEventsForDay(DateTime day) {
-    return _events[day] ?? [];
+  @override
+  void dispose() {
+    _selectedEvents.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadEventsForDay(DateTime day) async {
+    // Query Firestore for todos with `is_completed = true` on the selected day
+    final email = "user@example.com"; // Replace with actual user's email
+    final todos = await _store.getTodoList(email);
+
+    if (todos != null) {
+      final completedTodos = todos
+          .where((todo) =>
+      todo.date.toDate().year == day.year &&
+          todo.date.toDate().month == day.month &&
+          todo.date.toDate().day == day.day &&
+          todo.is_completed)
+          .map((todo) => Event(todo.categori, Colors.green)) // Convert to Event
+          .toList();
+
+      _selectedEvents.value = completedTodos;
+    } else {
+      _selectedEvents.value = [];
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 375, // 고정된 너비
-      height: 812, // 고정된 높이
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(125.0),
-          child: Padding(
-            padding: EdgeInsets.only(left: 25.0, top: 40.0),
-            child: AppBar(
-              backgroundColor: Colors.white,
-              elevation: 0,
-              automaticallyImplyLeading: false,
-              leading: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => TodoListPage()),
-                  );
-                },
-                child: Container(
-                  width: 60.0,
-                  height: 60.0,
-                  child: Image.asset("assets/images/chart.png"),
-                ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('캘린더'),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
+      ),
+      body: Column(
+        children: [
+          TableCalendar(
+            firstDay: DateTime(2020, 1, 1),
+            lastDay: DateTime(2030, 12, 31),
+            focusedDay: _focusedDay,
+            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {
+                _selectedDay = selectedDay;
+                _focusedDay = focusedDay;
+              });
+              _loadEventsForDay(selectedDay);
+            },
+            eventLoader: (day) => _selectedEvents.value,
+            calendarStyle: const CalendarStyle(
+              todayDecoration: BoxDecoration(
+                color: Colors.orange,
+                shape: BoxShape.circle,
               ),
-              title: const Text(
-                '캘린더',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+              markerDecoration: BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
               ),
-              centerTitle: true, // 제목을 중앙으로 설정
-              actions: [
-                Padding(
-                  padding: EdgeInsets.only(right: 25.0),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => CalendarPage()),
-                      );
-                    },
-                    child: Container(
-                      width: 60.0,
-                      height: 60.0,
-                      child: Image.asset("assets/images/calender.png"),
-                    ),
-                  ),
-                ),
-              ],
             ),
           ),
-        ),
-        body: Stack(
-          children: [
-            Center(
-              child: Column(
-                children: [
-                  TableCalendar(
-                    firstDay: DateTime(2020, 1, 1),
-                    lastDay: DateTime(2030, 12, 31),
-                    focusedDay: _focusedDay,
-                    selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                    onDaySelected: (selectedDay, focusedDay) {
-                      setState(() {
-                        _selectedDay = selectedDay;
-                        _focusedDay = focusedDay;
-                        _selectedEvents.value = _getEventsForDay(selectedDay);
-                      });
-                    },
-                    eventLoader: _getEventsForDay,
-                    calendarStyle: const CalendarStyle(
-                      todayDecoration: BoxDecoration(),
-                      selectedDecoration: BoxDecoration(),
-                      todayTextStyle: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                      selectedTextStyle: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                      defaultTextStyle: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                      weekendTextStyle: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                      disabledTextStyle: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                      markerDecoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      cellMargin: EdgeInsets.symmetric(vertical: 8),
+          const SizedBox(height: 8.0),
+          ValueListenableBuilder<List<Event>>(
+            valueListenable: _selectedEvents,
+            builder: (context, events, _) {
+              return Expanded(
+                child: ListView(
+                  children: events
+                      .map((event) => ListTile(
+                    title: Text(
+                      event.title,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    headerStyle: HeaderStyle(
-                      formatButtonVisible: false,
-                      titleCentered: true,
-                      titleTextFormatter: (date, locale) =>
-                          DateFormat.MMMM(locale).format(date),
-                    ),
-                    daysOfWeekHeight: 55,
-                    rowHeight: 80,
-                    calendarBuilders: CalendarBuilders(
-                      markerBuilder: (context, date, events) {
-                        if (events.isNotEmpty) {
-                          final eventList = events.cast<Event>();
-                          return Column(
-                            children: eventList.map((event) {
-                              return Container(
-                                margin: const EdgeInsets.only(top: 2),
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: event.color,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  event.title,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 8.0),
-                  ValueListenableBuilder<List<Event>>(
-                    valueListenable: _selectedEvents,
-                    builder: (context, events, _) {
-                      return Column(
-                        children: events
-                            .map((event) => ListTile(
-                          title: Text(
-                            event.title,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ))
-                            .toList(),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Positioned(
-              bottom: 40,
-              left: MediaQuery.of(context).size.width / 2 - 327 / 2,
-              child: SizedBox(
-                width: 327,
-                height: 60,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: () {
-                    // 버튼 클릭 시 동작 정의
-                  },
-                  child: const Text(
-                    '이번 달 달성률 분석 >',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
+                  ))
+                      .toList(),
                 ),
-              ),
-            ),
-          ],
-        ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -254,4 +119,5 @@ class Event {
   final Color color;
   Event(this.title, this.color);
 }
+
 
