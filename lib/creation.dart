@@ -36,7 +36,6 @@ class _CreationPageState extends State<CreationPage> {
         priority: 0, // 기본 우선순위
         is_completed: false, // 기본 완료 상태
         description: taskMemo,
-        //task: null, // Task 필드에 적절한 값을 할당 (현재 Task 객체가 없으므로 null)
       );
       if (isNotificationOn) {
         // 현재 시간과 선택된 시간의 차이를 계산
