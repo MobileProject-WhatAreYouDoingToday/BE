@@ -42,13 +42,8 @@ class _TodoListPageState extends State<TodoListPage> {
   // Firestore에서 할 일 목록을 로드하는 메서드
   Future<void> _loadTasks() async {
     Store store = Store();
-    List<Todo>? todoList = await store.getTodoList(email);
-    for(int i =0;i<todoList!.length;i++){
-      DateTime ListDate = todoList[i].date.toDate();
-      if(ListDate.year == selectday.year && ListDate.month == selectday.month && ListDate.day == selectday.day){
-        tasks.add(todoList[i]);
-      }
-    }
+    List<Todo>? todoList = await store.getSelectedDateTodoList(email, timestamp);
+    print(todoList![0].name);
     if (todoList != null) {
       setState(() {
         isMemoVisible = List<bool>.filled(tasks.length, false); // tasks의 길이에 맞게 초기화

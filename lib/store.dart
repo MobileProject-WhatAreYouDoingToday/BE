@@ -165,11 +165,11 @@ class Store {
   }
 
   Future<List<Todo>?> getSelectedDateTodoList(String email, Timestamp select) async {
-    List<Todo> todoList = getTodoList(email) as List<Todo>;
+    List<Todo>? todoList = await getTodoList(email);
     List<Todo> tasks = [];
 
     DateTime selectedDate = select.toDate();
-    for(int i =0;i<todoList.length;i++){
+    for(int i =0;i<todoList!.length;i++){
       DateTime ListDate = todoList[i].date.toDate();
       if(ListDate.year == selectedDate.year && ListDate.month == selectedDate.month && ListDate.day == selectedDate.day){
         tasks.add(todoList[i]);
