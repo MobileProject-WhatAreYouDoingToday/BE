@@ -35,7 +35,7 @@ class _MainWidgetState extends State<MainWidget> {
 
 
     setState(() {
-      if (todoList == null || todoList!.isEmpty) {
+      if (todoList == null || todoList.isEmpty) {
         // Todo nullTodo = new Todo(name: "아직 할 일이 없습니다.", categori: "null", date: Timestamp.fromDate(DateTime.now()),
         //     isNotification: false, priority: 0, is_completed: false, description: "");
         // todoList!.add(nullTodo);
@@ -90,7 +90,7 @@ class _MainWidgetState extends State<MainWidget> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CalendarPage()),
+                      MaterialPageRoute(builder: (context) => CalendarPage(auth : authe)),
                     );
                   },
                   child: Container(
