@@ -1,23 +1,36 @@
 import 'package:flutter/material.dart';
-import 'task.dart'; // list.dart 파일을 불러옵니다.
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'auth.dart';
+import 'store.dart'; // Todo 클래스를 포함한 task.dart
 import 'list.dart';
 
 class ProcessScreen extends StatelessWidget {
-  final List<Task> tasks; // Task 모델은 체크리스트 항목을 나타냅니다.
+  final List<Todo> tasks; // Todo 모델은 체크리스트 항목을 나타냅니다.
+  final Auth auth;
 
-  ProcessScreen({required this.tasks});
+  ProcessScreen({required this.tasks, required this.auth});
 
   @override
   Widget build(BuildContext context) {
+    String email = auth.userCredential!.user!.email!;
     int totalTasks = tasks.length;
-    int completedTasks = tasks.where((task) => task.isCompleted).length;
+    int completedTasks = tasks.where((todo) => todo.is_completed).length; // is_completed 필드 사용
     double achievementRate =
-        totalTasks > 0 ? (completedTasks / totalTasks * 100) : 0;
+    totalTasks > 0 ? (completedTasks / totalTasks * 100) : 0;
 
     // 체크되지 않은 항목 중 첫 번째 항목 찾기
-    Task? nextTask = tasks.firstWhere(
-      (task) => !task.isCompleted,
-      orElse: () => Task(title: '', isCompleted: false), // 기본값 제공
+    Todo? nextTask = tasks.firstWhere(
+          (todo) => !todo.is_completed,
+      orElse: () => Todo(
+        name: '',
+        categori: '',
+        date: Timestamp.now(),
+        isNotification: false,
+        priority: 0,
+        is_completed: false,
+        description: '',
+        //task: null,
+      ), // 기본값 제공
     );
 
     return Scaffold(
@@ -29,7 +42,8 @@ class ProcessScreen extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => TodoListPage()), // list.dart로 이동
+                builder: (context) => TodoListPage(auth: auth,), // list.dart로 이동
+              ),
             );
           },
         ),
@@ -52,21 +66,21 @@ class ProcessScreen extends StatelessWidget {
             ),
             SizedBox(height: 20),
             // 체크 완료되지 않은 항목 표시
-            if (nextTask.title.isNotEmpty) ...[
+            if (nextTask.name.isNotEmpty) ...[
               Text(
-                '아직 달성 하지 못했어요!',
+                '아직 달성하지 못했어요!',
                 style: TextStyle(color: Colors.red, fontSize: 18),
               ),
               SizedBox(height: 10),
               Row(
                 children: [
                   Checkbox(
-                    value: nextTask.isCompleted,
+                    value: nextTask.is_completed,
                     onChanged: (bool? value) {
                       // 체크박스 클릭 시 처리 로직 추가
                     },
                   ),
-                  Text(nextTask.title), // 항목 제목
+                  Text(nextTask.name), // 항목 제목
                 ],
               ),
             ],

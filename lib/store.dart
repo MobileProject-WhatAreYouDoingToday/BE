@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:whatareyoudoingtoday/task.dart';
 
 /*
 * users라는 컬렉션에 각 user의 문서를 배치함 이 때, uid보다 email로 접근하는 것이 더 나을 것 같음. 추후에 이메일로 비밀번호를 바꾸는 기능을 추가하기 위함.
@@ -13,7 +12,7 @@ import 'package:whatareyoudoingtoday/task.dart';
 /*
 * 달성률은
 *
-*
+* 카테고리
 *
 *
 * */
@@ -35,9 +34,9 @@ class UserData {
       ) {
     final data = snapshot.data();
     return UserData(
-      name: data?['name'],
-      uid: data?['uid'],
-      pw: data?['pw']
+        name: data?['name'],
+        uid: data?['uid'],
+        pw: data?['pw']
     );
   }
 
@@ -56,8 +55,8 @@ class Todo {
   final String description; // todo 메모
   final Timestamp date; //  todo 생성날짜
   final bool isNotification; // todo 알림여부
-  late final int priority; // todo 우선순위, 오늘의 달성률에서 맨위에 있는거 보이게 하는용도
-  final bool is_completed; //todo 완료여부
+  late int priority; // todo 우선순위, 오늘의 달성률에서 맨위에 있는거 보이게 하는용도
+  late bool is_completed; //todo 완료여부
 
   Todo({
     required this.name,
@@ -91,7 +90,9 @@ class Todo {
       if (categori != null) 'categori': categori,
       if (date != null) 'date': date,
       if (isNotification != null) 'isNotification': isNotification,
-      if (priority != null) 'priority': priority
+      if (priority != null) 'priority': priority,
+      if (is_completed != null) 'is_completed': is_completed,
+      if (description != null) 'description': description,
     };
   }
 }
@@ -108,7 +109,7 @@ class Store {
     final docSnap = await ref.get();
     final user = docSnap.data();
     if (user != null) {
-      print('유저 데이터 불러오기 성공'); // await 문이므로 확인용으로 print
+
       return user;
     } else {
       print('유저 정보가 없음'); // await 문이므로 확인용으로 print
@@ -151,17 +152,30 @@ class Store {
     final todoList = querySnapshot.docs.map((doc) => doc.data()).toList();
 
     if (todoList.isNotEmpty) {
-      print('todolist 불러오기 성공');
       // 쿼리 결과 출력
-      for (var todo in todoList) {
-        print('Todo: ${todo.name}, Priority: ${todo.priority}');
-      }
+      print('전체 todolist 불러오기 성공');
       return todoList;
     } else {
-      print('todolist 또 없음s');
-      return null;
+      print('todolist 없음');
+      return todoList;
     }
   }
+
+  Future<List<Todo>?> getSelectedDateTodoList(String email, Timestamp select) async {
+    List<Todo>? todoList = await getTodoList(email);
+    List<Todo> tasks = [];
+
+    DateTime selectedDate = select.toDate();
+    for(int i =0;i<todoList!.length;i++){
+      DateTime ListDate = todoList[i].date.toDate();
+      if(ListDate.year == selectedDate.year && ListDate.month == selectedDate.month && ListDate.day == selectedDate.day){
+        tasks.add(todoList[i]);
+      }
+    }
+
+    return tasks;
+  }
+
 
   Future<void> setTodoPriorty(String email,Todo updatedTodo, int priority) async{
     List<Todo> todoList = getTodoList(email) as List<Todo>;
@@ -198,7 +212,7 @@ class Store {
   }
 
 
-  Future<Todo?> getTodo(String email, Timestamp date, String category,int priority) async { // 특정 todo 불러오기
+  Future<Todo?> getTodo(String email, Timestamp date, String category, int priority) async { // 특정 todo 불러오기
     final ref = store.collection("users").doc(email).collection("todolist")
         .where("date", isEqualTo: date)
         .where("priority", isEqualTo: priority)
