@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'list.dart';
 import 'store.dart';
 
 class CalendarPage extends StatefulWidget {
-  const CalendarPage({super.key});
+  final String userEmail;
+
+  const CalendarPage({required this.userEmail, Key? key}) : super(key: key);
 
   @override
   State<CalendarPage> createState() => _CalendarPageState();
@@ -17,7 +16,7 @@ class _CalendarPageState extends State<CalendarPage> {
   late final ValueNotifier<List<Event>> _selectedEvents;
   late DateTime _focusedDay;
   late DateTime _selectedDay;
-  final Store _store = Store(); // Access the Firestore store
+  final Store _store = Store(); // Use the existing Store instance
 
   @override
   void initState() {
@@ -35,22 +34,26 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Future<void> _loadEventsForDay(DateTime day) async {
-    // Query Firestore for todos with `is_completed = true` on the selected day
-    final email = "user@example.com"; // Replace with actual user's email
-    final todos = await _store.getTodoList(email);
+    try {
+      final todos = await _store.getTodoList(widget.userEmail);
 
-    if (todos != null) {
-      final completedTodos = todos
-          .where((todo) =>
-      todo.date.toDate().year == day.year &&
-          todo.date.toDate().month == day.month &&
-          todo.date.toDate().day == day.day &&
-          todo.is_completed)
-          .map((todo) => Event(todo.categori, Colors.green)) // Convert to Event
-          .toList();
+      if (todos != null) {
+        // Filter todos for the selected date and check completion status
+        final completedTodos = todos
+            .where((todo) =>
+        todo.date.toDate().year == day.year &&
+            todo.date.toDate().month == day.month &&
+            todo.date.toDate().day == day.day &&
+            todo.is_completed)
+            .map((todo) => Event(todo.categori, Colors.green)) // Convert to Event
+            .toList();
 
-      _selectedEvents.value = completedTodos;
-    } else {
+        _selectedEvents.value = completedTodos;
+      } else {
+        _selectedEvents.value = [];
+      }
+    } catch (e) {
+      print('Error loading events for day: $e');
       _selectedEvents.value = [];
     }
   }
@@ -117,7 +120,11 @@ class _CalendarPageState extends State<CalendarPage> {
 class Event {
   final String title;
   final Color color;
+
   Event(this.title, this.color);
 }
+
+
+
 
 
