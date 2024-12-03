@@ -1,9 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart'; // FirebaseAuth를 사용
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
-import 'package:whatareyoudoingtoday/auth.dart';
-import 'package:whatareyoudoingtoday/store.dart';
+import 'auth.dart';
+import 'store.dart';
+import 'MainWidget.dart'; // MainWidget을 정의한 파일 import
+import 'list.dart'; // TodoListPage를 정의한 파일 import
+import 'achieve.dart'; // AchievePage를 정의한 파일 import
 
 class Calendar extends StatelessWidget {
   final Auth auth;
@@ -48,35 +51,31 @@ class _CalendarPageState extends State<CalendarPage> {
     _events = {}; // 이벤트 초기화
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay));
 
-    // 데이터를 가져오는 비동기 작업 실행
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initializeEmailAndFetchTodos();
     });
   }
 
-  /// FirebaseAuth를 사용하여 현재 사용자의 이메일 설정
   Future<void> initializeEmailAndFetchTodos() async {
-    final currentUser = FirebaseAuth.instance.currentUser; // 현재 사용자 가져오기
+    final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null && currentUser.email != null) {
       email = currentUser.email!;
-      await getTodoList(); // Todo 리스트 가져오기
+      await getTodoList();
     } else {
       print("현재 로그인된 사용자가 없습니다.");
     }
   }
 
-  /// Store에서 Todo 데이터를 가져와 이벤트로 변환
   Future<void> getTodoList() async {
-    todoList = await Store().getTodoList(email) ?? []; // null 방지
+    todoList = await Store().getTodoList(email) ?? [];
 
     setState(() {
-      _events = {}; // 초기화
+      _events = {};
       for (var todo in todoList) {
-        if (todo.is_completed) { // 완료된 Todo만 처리
-          final todoDate = todo.date.toDate(); // Timestamp를 DateTime으로 변환
+        if (todo.is_completed) {
+          final todoDate = todo.date.toDate();
           final eventDate = DateTime(todoDate.year, todoDate.month, todoDate.day);
 
-          // 카테고리에 따른 색상 매핑
           Color eventColor;
           switch (todo.categori) {
             case "독서":
@@ -92,7 +91,7 @@ class _CalendarPageState extends State<CalendarPage> {
               eventColor = const Color(0xFF61E4C5);
               break;
             default:
-              eventColor = Colors.grey; // 기본 색상
+              eventColor = Colors.grey;
           }
 
           final event = Event(todo.categori, eventColor);
@@ -103,11 +102,10 @@ class _CalendarPageState extends State<CalendarPage> {
           }
         }
       }
-      _selectedEvents.value = _getEventsForDay(_selectedDay); // 현재 선택된 날짜 업데이트
+      _selectedEvents.value = _getEventsForDay(_selectedDay);
     });
   }
 
-  /// 특정 날짜의 이벤트를 가져오는 함수
   List<Event> _getEventsForDay(DateTime day) {
     return _events[DateTime(day.year, day.month, day.day)] ?? [];
   }
@@ -115,8 +113,8 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 375, // 고정된 너비
-      height: 812, // 고정된 높이
+      width: 375,
+      height: 812,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: PreferredSize(
@@ -131,14 +129,10 @@ class _CalendarPageState extends State<CalendarPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => LoginWidget()),
+                    MaterialPageRoute(builder: (context) => MainWidget(auth: auth,)),
                   );
                 },
-                child: Container(
-                  width: 60.0,
-                  height: 60.0,
-                  child: Image.asset("assets/images/chart.png"),
-                ),
+                child: Image.asset("assets/images/chart.png"),
               ),
               title: const Text(
                 '캘린더',
@@ -152,14 +146,10 @@ class _CalendarPageState extends State<CalendarPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => CalendarPage(auth: auth)),
+                        MaterialPageRoute(builder: (context) => TodoListPage()),
                       );
                     },
-                    child: Container(
-                      width: 60.0,
-                      height: 60.0,
-                      child: Image.asset("assets/images/todobutton.png"),
-                    ),
+                    child: Image.asset("assets/images/todobutton.png"),
                   ),
                 ),
               ],
@@ -184,70 +174,12 @@ class _CalendarPageState extends State<CalendarPage> {
                       });
                     },
                     eventLoader: _getEventsForDay,
-                    calendarStyle: const CalendarStyle(
-                      todayDecoration: BoxDecoration(),
-                      selectedDecoration: BoxDecoration(),
-                      todayTextStyle: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                      selectedTextStyle: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                      defaultTextStyle: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                      weekendTextStyle: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                      disabledTextStyle: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                      markerDecoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      cellMargin: EdgeInsets.symmetric(vertical: 8),
-                    ),
+                    calendarStyle: const CalendarStyle(),
                     headerStyle: HeaderStyle(
                       formatButtonVisible: false,
                       titleCentered: true,
                       titleTextFormatter: (date, locale) =>
                           DateFormat.MMMM(locale).format(date),
-                    ),
-                    daysOfWeekHeight: 55,
-                    rowHeight: 80,
-                    calendarBuilders: CalendarBuilders(
-                      markerBuilder: (context, date, events) {
-                        if (events.isNotEmpty) {
-                          final eventList = events.cast<Event>();
-                          return Column(
-                            children: eventList.map((event) {
-                              return Container(
-                                margin: const EdgeInsets.only(top: 2),
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: event.color,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  event.title,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
                     ),
                   ),
                   const SizedBox(height: 8.0),
@@ -257,13 +189,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       return Column(
                         children: events
                             .map((event) => ListTile(
-                          title: Text(
-                            event.title,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          title: Text(event.title),
                         ))
                             .toList(),
                       );
@@ -286,7 +212,10 @@ class _CalendarPageState extends State<CalendarPage> {
                     ),
                   ),
                   onPressed: () {
-                    // 버튼 클릭 시 동작 정의
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AchievePage()),
+                    );
                   },
                   child: const Text(
                     '이번 달 달성률 분석 >',
@@ -307,3 +236,4 @@ class Event {
   final Color color;
   Event(this.title, this.color);
 }
+

@@ -13,38 +13,45 @@ class MainWidget extends StatefulWidget {
   MainWidget({required this.auth});
 
   @override
-  _MainWidgetState createState() => _MainWidgetState();
+  _MainWidgetState createState() => _MainWidgetState(auth);
 }
 
 class _MainWidgetState extends State<MainWidget> {
-  String? email;
-  List<Todo>? todoList;
-  double progressValue = 0.8;
-  int progressPercentage = 80;
+  final Auth auth;
+  String email = "";
+  List<Todo> todoList = [];
+  late double progressValue = 0.0;
+  late int progressPercentage = 0;
   Store store = Store();
+
+  _MainWidgetState(this.auth);
 
   @override
   void initState() {
     super.initState();
+    email = widget.auth.userCredential!.user!.email!;
     getTodoList();
   }
 
   Future<void> getTodoList() async {
-    email = widget.auth.userCredential?.user?.email;
-    todoList = await store.getTodoList(email!);
+    todoList = (await store.getTodoList(email))!;
+
 
     setState(() {
-      if (todoList == null || todoList!.isEmpty) {
+      if (todoList == null || todoList.isEmpty) {
+        // Todo nullTodo = new Todo(name: "아직 할 일이 없습니다.", categori: "null", date: Timestamp.fromDate(DateTime.now()),
+        //     isNotification: false, priority: 0, is_completed: false, description: "");
+        // todoList!.add(nullTodo);
         progressValue = 0.0;
         progressPercentage = (progressValue * 100).round(); // 퍼센트로 변환
       } else {
         int checked = 0;
-        for(int i=0;i<todoList!.length;i++){
-          if(todoList![i].is_completed){
+        for(int i=0;i<todoList.length;i++){
+          if(todoList[i].is_completed){
             checked++;
           }
         }
-        progressValue = checked/todoList!.length;
+        progressValue = checked/todoList.length;
         progressPercentage = (progressValue * 100).round(); // 퍼센트로 변환
       }
     });
@@ -70,7 +77,7 @@ class _MainWidgetState extends State<MainWidget> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => TodoListPage()),
+                  MaterialPageRoute(builder: (context) => TodoListPage(auth: auth,)),
                 );
               },
               child: Container(
@@ -86,7 +93,7 @@ class _MainWidgetState extends State<MainWidget> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CalendarPage()),
+                      MaterialPageRoute(builder: (context) => CalendarPage(auth : authe)),
                     );
                   },
                   child: Container(
@@ -173,11 +180,15 @@ class _MainWidgetState extends State<MainWidget> {
             padding: EdgeInsets.all(25),
             child: Row(
               children: [
-                Checkbox(value: todoList![0].is_completed, onChanged: (value) {}),
+                todoList.isNotEmpty ?
+                Checkbox(value: todoList[0].is_completed, onChanged: (value) {
+                  todoList[0].is_completed = true;
+                  store.setTodo(email, todoList[0]);
+                }) : Checkbox(value: false, onChanged: null,),
                 SizedBox(width: 10),
                 Text(
-                  todoList![0].name,
-                  style: TextStyle(fontSize: 16),
+                  todoList.isNotEmpty ? todoList[0].name : "오늘 할 일이 없습니다.",
+                  style: TextStyle(fontSize: 16, color: todoList.isNotEmpty ? Colors.black : Colors.grey),
                 ),
               ],
             ),
