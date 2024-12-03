@@ -174,12 +174,70 @@ class _CalendarPageState extends State<CalendarPage> {
                       });
                     },
                     eventLoader: _getEventsForDay,
-                    calendarStyle: const CalendarStyle(),
+                    calendarStyle: const CalendarStyle(
+                      todayDecoration: BoxDecoration(),
+                      selectedDecoration: BoxDecoration(),
+                      todayTextStyle: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      selectedTextStyle: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      defaultTextStyle: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      weekendTextStyle: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      disabledTextStyle: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                      markerDecoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      cellMargin: EdgeInsets.symmetric(vertical: 8),
+                    ),
                     headerStyle: HeaderStyle(
                       formatButtonVisible: false,
                       titleCentered: true,
                       titleTextFormatter: (date, locale) =>
                           DateFormat.MMMM(locale).format(date),
+                    ),
+                    daysOfWeekHeight: 55,
+                    rowHeight: 80,
+                    calendarBuilders: CalendarBuilders(
+                      markerBuilder: (context, date, events) {
+                        if (events.isNotEmpty) {
+                          final eventList = events.cast<Event>();
+                          return Column(
+                            children: eventList.map((event) {
+                              return Container(
+                                margin: const EdgeInsets.only(top: 2),
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: event.color,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  event.title,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
                     ),
                   ),
                   const SizedBox(height: 8.0),
@@ -189,7 +247,13 @@ class _CalendarPageState extends State<CalendarPage> {
                       return Column(
                         children: events
                             .map((event) => ListTile(
-                          title: Text(event.title),
+                          title: Text(
+                            event.title,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ))
                             .toList(),
                       );
@@ -212,10 +276,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     ),
                   ),
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AchievePage(userEmail: email,)),
-                    );
+                    // 버튼 클릭 시 동작 정의
                   },
                   child: const Text(
                     '이번 달 달성률 분석 >',
@@ -236,6 +297,8 @@ class Event {
   final Color color;
   Event(this.title, this.color);
 }
+
+
 
 
 
