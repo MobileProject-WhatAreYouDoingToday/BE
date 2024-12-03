@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:whatareyoudoingtoday/MainWidget.dart';
 import 'auth.dart';
 import 'creation.dart';
-import 'process.dart' as process;
 import 'store.dart'; // Todo 클래스를 포함한 task.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -34,7 +33,6 @@ class _TodoListPageState extends State<TodoListPage> {
     DateTime now = DateTime.now();
     selectday = DateTime(now.year, now.month, now.day);
     timestamp = Timestamp.fromDate(selectday);
-
     _loadTasks(); // 초기화 시 할 일 목록 로드
   }
 
@@ -140,21 +138,21 @@ class _TodoListPageState extends State<TodoListPage> {
   void _toggleTaskPosition(int index) {
     setState(() {
       tasks[index].is_completed = !tasks[index].is_completed;
-      Store().setTodo(email, tasks[index]);
-      int incompleteTaskCount = tasks.where((task) => !task.is_completed).length;
-      print('완료되지 않은 작업의 개수: $incompleteTaskCount');
-      Store().setTodoPriority(email, tasks[index], incompleteTaskCount+tasks[index].priority);
-
-      // 체크된 상태일 경우, 해당 항목을 리스트의 맨 아래로 이동
-      if (tasks[index].is_completed) {
-        Todo completedTask = tasks.removeAt(index);
-        tasks.add(completedTask);
-      }
-      // 체크 해제된 항목은 리스트 상단으로 올라오도록 재정렬
-      tasks.sort((a, b) {
-        return a.is_completed ? 1 : -1; // 미완료 항목이 먼저 오도록 정렬
-      });
     });
+
+    Store().setTodo(email, tasks[index]).then((_) {
+      if (tasks[index].is_completed) {
+        Store().setTodoPriority(email, tasks[index], -1).then((_) {
+          _loadTasks();
+        });
+      } else {
+        print("가장 나중의 priority = ${tasks.first.priority}");
+        Store().setTodoPriority(email, tasks[index], tasks.first.priority + 1).then((_) {
+          _loadTasks();
+        });
+      }
+    });
+
   }
 
   @override

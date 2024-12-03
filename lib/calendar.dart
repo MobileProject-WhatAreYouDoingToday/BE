@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
-import 'package:whatareyoudoingtoday/auth.dart';
-import 'package:whatareyoudoingtoday/store.dart';
-import 'list.dart';
+import 'auth.dart';
+import 'store.dart';
+import 'MainWidget.dart'; // MainWidget을 정의한 파일 import
+import 'list.dart'; // TodoListPage를 정의한 파일 import
+import 'achieve.dart'; // AchievePage를 정의한 파일 import
 
 class Calendar extends StatelessWidget {
   final Auth auth;
@@ -16,7 +19,7 @@ class Calendar extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: CalendarPage(auth: auth,),
+      home: CalendarPage(auth: auth),
     );
   }
 }
@@ -33,10 +36,10 @@ class _CalendarPageState extends State<CalendarPage> {
   final Auth auth;
   _CalendarPageState({required this.auth});
   late final ValueNotifier<List<Event>> _selectedEvents;
-  late final Map<DateTime, List<Event>> _events;
+  late Map<DateTime, List<Event>> _events;
   late DateTime _focusedDay;
   late DateTime _selectedDay;
-  String email = "";
+  String email = ""; // 사용자 이메일
   List<Todo> todoList = [];
 
   @override
@@ -44,46 +47,80 @@ class _CalendarPageState extends State<CalendarPage> {
     super.initState();
     _focusedDay = DateTime.now();
     _selectedDay = _focusedDay;
-    getTodoList();
 
-
-    // 샘플 데이터로 이벤트 초기화
-    _events = <DateTime, List<Event>>{
-      DateTime(2024, 10, 1): [
-        Event("독서", const Color(0xFFFF9692)),
-        Event("공부", const Color(0xFF61E4C5))
-      ],
-      DateTime(2024, 10, 2): [
-        Event("취미", const Color(0xFFDBBEFC)),
-        Event("운동", const Color(0xFFFFD465))
-      ],
-      DateTime(2024, 10, 3): [
-        Event("독서", const Color(0xFFFF9692)),
-      ],
-    };
-
+    _events = {}; // 이벤트 초기화
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      initializeEmailAndFetchTodos();
+    });
+  }
+
+  Future<void> initializeEmailAndFetchTodos() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null && currentUser.email != null) {
+      email = currentUser.email!;
+      await getTodoList();
+    } else {
+      print("현재 로그인된 사용자가 없습니다.");
+    }
   }
 
   Future<void> getTodoList() async {
-    todoList = (await Store().getTodoList(email))!;
+    todoList = await Store().getTodoList(email) ?? [];
+
+    setState(() {
+      _events = {};
+      for (var todo in todoList) {
+        if (todo.is_completed) {
+          final todoDate = todo.date.toDate();
+          final eventDate = DateTime(todoDate.year, todoDate.month, todoDate.day);
+
+          Color eventColor;
+          switch (todo.categori) {
+            case "독서":
+              eventColor = const Color(0xFFFF9692);
+              break;
+            case "취미":
+              eventColor = const Color(0xFFDBBEFC);
+              break;
+            case "운동":
+              eventColor = const Color(0xFFFFD465);
+              break;
+            case "공부":
+              eventColor = const Color(0xFF61E4C5);
+              break;
+            default:
+              eventColor = Colors.grey;
+          }
+
+          final event = Event(todo.categori, eventColor);
+          if (_events[eventDate] == null) {
+            _events[eventDate] = [event];
+          } else {
+            _events[eventDate]!.add(event);
+          }
+        }
+      }
+      _selectedEvents.value = _getEventsForDay(_selectedDay);
+    });
   }
 
   List<Event> _getEventsForDay(DateTime day) {
-    return _events[day] ?? [];
+    return _events[DateTime(day.year, day.month, day.day)] ?? [];
   }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 375, // 고정된 너비
-      height: 812, // 고정된 높이
+      width: 375,
+      height: 812,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(125.0),
+          preferredSize: const Size.fromHeight(125.0),
           child: Padding(
-            padding: EdgeInsets.only(left: 25.0, top: 40.0),
+            padding: const EdgeInsets.only(left: 25.0, top: 40.0),
             child: AppBar(
               backgroundColor: Colors.white,
               elevation: 0,
@@ -92,35 +129,27 @@ class _CalendarPageState extends State<CalendarPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => /*TodoListPage*/LoginWidget()),
+                    MaterialPageRoute(builder: (context) => MainWidget(auth: auth,)),
                   );
                 },
-                child: Container(
-                  width: 60.0,
-                  height: 60.0,
-                  child: Image.asset("assets/images/chart.png"),
-                ),
+                child: Image.asset("assets/images/chart.png"),
               ),
               title: const Text(
                 '캘린더',
                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
               ),
-              centerTitle: true, // 제목을 중앙으로 설정
+              centerTitle: true,
               actions: [
                 Padding(
-                  padding: EdgeInsets.only(right: 25.0),
+                  padding: const EdgeInsets.only(right: 25.0),
                   child: GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => CalendarPage(auth: authe,)),
+                        MaterialPageRoute(builder: (context) => TodoListPage(auth:auth)),
                       );
                     },
-                    child: Container(
-                      width: 60.0,
-                      height: 60.0,
-                      child: Image.asset("assets/images/todobutton.png"),
-                    ),
+                    child: Image.asset("assets/images/todobutton.png"),
                   ),
                 ),
               ],
@@ -268,3 +297,5 @@ class Event {
   final Color color;
   Event(this.title, this.color);
 }
+
+

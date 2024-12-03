@@ -185,16 +185,16 @@ class _MainWidgetState extends State<MainWidget> {
                       if (todoList.isNotEmpty) {
                         setState(() {
                           // 체크 상태를 변경
-                          todoList[0].is_completed = !todoList[0].is_completed;
+                          todoList[todoList.length-1].is_completed = !todoList[todoList.length-1].is_completed;
                         });
                         // Firestore에 업데이트
-                        await store.setTodo(email, todoList[0]);
+                        await store.setTodo(email, todoList[todoList.length-1]);
                         // 체크 상태를 변경한 후 진행률 업데이트
                         await getTodoList();
                       }
                     },
                     child: Image.asset(
-                      todoList[0].is_completed
+                      todoList[todoList.length-1].is_completed
                           ? 'assets/images/checkbox.png' // 체크된 상태 이미지
                           : 'assets/images/uncheckbox.png', // 체크 해제 상태 이미지
                       width: 30,
@@ -203,7 +203,7 @@ class _MainWidgetState extends State<MainWidget> {
                   ),
                   SizedBox(width: 10),
                   Text(
-                    todoList[0].name,
+                    todoList[todoList.length-1].name,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.black,
