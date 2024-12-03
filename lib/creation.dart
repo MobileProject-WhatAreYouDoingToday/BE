@@ -20,8 +20,9 @@ class _CreationPageState extends State<CreationPage> {
   String taskMemo = '';
   bool isNotificationOn = false;
   TimeOfDay selectedTime = TimeOfDay.now();
-  int? selectedCategory; // nullable 변수
+  String? selectedCategory; // nullable 변수
   int? reminderTime;
+
 
   _CreationPageState(this.email); // 알림 시간 변수 추가
 
@@ -30,7 +31,7 @@ class _CreationPageState extends State<CreationPage> {
       // Todo 객체 생성
       Todo newTodo = Todo(
         name: taskTitle,
-        categori: selectedCategory != null ? selectedCategory.toString() : '기타', // 카테고리 설정
+        categori: selectedCategory != "기타" ? selectedCategory.toString() : "기타", // 카테고리 설정
         date: Timestamp.now(), // 현재 시간으로 설정
         isNotification: isNotificationOn, // 알림 여부 설정
         priority: 0, // 기본 우선순위
@@ -67,7 +68,7 @@ class _CreationPageState extends State<CreationPage> {
       newTodo.priority = lastP;
 
       // Todo 객체를 반환
-      Navigator.pop(context, {'todo': newTodo, 'selectedTime': selectedTime, 'reminderTime': reminderTime});
+      Navigator.pop(context, {'todo': newTodo, 'selectedTime': selectedTime});
       Store().setTodo(email, newTodo);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -92,7 +93,7 @@ class _CreationPageState extends State<CreationPage> {
     if (result != null) {
       final newTodo = result['todo'] as Todo; // Todo 객체
       final TimeOfDay selectedTime = result['selectedTime']; // 선택된 시간
-      final int? reminderTime = result['reminderTime'];
+      //final int? reminderTime = result['reminderTime'];
 
       setState(() {
         this.selectedTime = selectedTime; // 선택된 시간 업데이트
@@ -107,6 +108,9 @@ class _CreationPageState extends State<CreationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final buttonWidth = (screenWidth - 40.0 - 4 * 8.0) / 4; // 40.0은 패딩, 8.0은 spacing
+
     return Scaffold(
       backgroundColor: Color(0xFFFFFFFF),
       appBar: AppBar(
@@ -243,21 +247,22 @@ class _CreationPageState extends State<CreationPage> {
               ),
             ),
             Container(
-              padding: EdgeInsets.only(left: 14.0),
+              padding: EdgeInsets.only(left: 7.0, right: 7.0),
               child: Wrap(
                 spacing: 8.0,
                 runSpacing: 8.0,
                 children: [
-                  _buildCategoryButton(0, '운동', 'assets/images/healthbtn.png'),
-                  _buildCategoryButton(1, '독서', 'assets/images/readingbtn.png'),
-                  _buildCategoryButton(2, '공부', 'assets/images/studdybtn.png'),
-                  _buildCategoryButton(3, '취미', 'assets/images/hobbybtn.png'),
+                  _buildCategoryButton(0, '운동', 'assets/images/healthbtn.png', buttonWidth),
+                  _buildCategoryButton(1, '독서', 'assets/images/readingbtn.png', buttonWidth),
+                  _buildCategoryButton(2, '공부', 'assets/images/studybtn.png', buttonWidth),
+                  _buildCategoryButton(3, '취미', 'assets/images/hobbybtn.png', buttonWidth),
                 ],
               ),
             ),
             SizedBox(height: 20),
             Container(
               height: 200,
+              width: double.infinity,
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage('assets/images/TextArea.png'),
@@ -286,21 +291,25 @@ class _CreationPageState extends State<CreationPage> {
     );
   }
 
-  Widget _buildCategoryButton(int index, String label, String imagePath) {
-    bool isSelected = selectedCategory == index; // 현재 버튼이 선택되었는지 확인
+  Widget _buildCategoryButton(int index, String label, String imagePath, double width) {
+    bool isSelected = selectedCategory == label; // 현재 버튼이 선택되었는지 확인
 
     return GestureDetector(
       onTap: () {
         setState(() {
-          selectedCategory = index; // 선택된 카테고리 인덱스 업데이트
-
+          // 선택된 카테고리 인덱스가 현재 인덱스와 같으면 비활성화, 아니면 활성화
+          if (isSelected) {
+            selectedCategory = "기타"; // 비활성화 상태를 나타내기 위해 -1로 설정
+          } else {
+            selectedCategory = label; // 선택된 카테고리 인덱스 업데이트
+          }
         });
       },
       child: Opacity(
         opacity: isSelected ? 1.0 : 0.5, // 선택된 버튼은 불투명하게, 나머지는 반투명하게
         child: Container(
-          width: 60,
-          height: 60,
+          width: width,
+          height: width,
           padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
@@ -310,6 +319,7 @@ class _CreationPageState extends State<CreationPage> {
             ),
           ),
         ),
+        //child: Text(label),
       ),
     );
   }

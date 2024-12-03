@@ -36,22 +36,20 @@ class _MainWidgetState extends State<MainWidget> {
   Future<void> getTodoList() async {
     todoList = (await store.getTodoList(email))!;
 
-
     setState(() {
       if (todoList == null || todoList.isEmpty) {
-        // Todo nullTodo = new Todo(name: "아직 할 일이 없습니다.", categori: "null", date: Timestamp.fromDate(DateTime.now()),
-        //     isNotification: false, priority: 0, is_completed: false, description: "");
-        // todoList!.add(nullTodo);
         progressValue = 0.0;
         progressPercentage = (progressValue * 100).round(); // 퍼센트로 변환
       } else {
+        todoList.sort((a, b) => a.priority.compareTo(b.priority));
+
         int checked = 0;
-        for(int i=0;i<todoList.length;i++){
-          if(todoList[i].is_completed){
+        for (int i = 0; i < todoList.length; i++) {
+          if (todoList[i].is_completed) {
             checked++;
           }
         }
-        progressValue = checked/todoList.length;
+        progressValue = checked / todoList.length;
         progressPercentage = (progressValue * 100).round(); // 퍼센트로 변환
       }
     });
@@ -77,12 +75,12 @@ class _MainWidgetState extends State<MainWidget> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => TodoListPage(auth: auth,)),
+                  MaterialPageRoute(builder: (context) => TodoListPage(auth: auth)),
                 );
               },
               child: Container(
-                width: 60.0,
-                height: 60.0,
+                width: 70.0,
+                height: 70.0,
                 child: Image.asset("assets/images/todobutton.png"),
               ),
             ),
@@ -93,7 +91,7 @@ class _MainWidgetState extends State<MainWidget> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CalendarPage(auth : authe)),
+                      MaterialPageRoute(builder: (context) => CalendarPage(auth: auth)),
                     );
                   },
                   child: Container(
@@ -111,7 +109,6 @@ class _MainWidgetState extends State<MainWidget> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            // timestamp as String,  // 오늘 날짜와 시간이 자동으로 표시됩니다
             formattedDate,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
@@ -121,7 +118,7 @@ class _MainWidgetState extends State<MainWidget> {
             style: TextStyle(fontSize: 38, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 30),
-          // Circular Progress Indicator (Custom design for 65%)
+          // Circular Progress Indicator
           Stack(
             alignment: Alignment.center,
             children: [
@@ -136,7 +133,7 @@ class _MainWidgetState extends State<MainWidget> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Color.fromRGBO(0, 0, 0, 0.7),  // 70% 투명도 검은색
+                          color: Color.fromRGBO(0, 0, 0, 0.7), // 70% 투명도 검은색
                           width: 70, // 윤곽선 두께
                         ),
                       ),
@@ -178,20 +175,43 @@ class _MainWidgetState extends State<MainWidget> {
           Container(
             color: Colors.grey.shade200,
             padding: EdgeInsets.all(25),
-            child: Row(
-              children: [
-                todoList.isNotEmpty ?
-                Checkbox(value: todoList[0].is_completed, onChanged: (value) {
-                  todoList[0].is_completed = true;
-                  store.setTodo(email, todoList[0]);
-                }) : Checkbox(value: false, onChanged: null,),
-                SizedBox(width: 10),
-                Text(
-                  todoList.isNotEmpty ? todoList[0].name : "오늘 할 일이 없습니다.",
-                  style: TextStyle(fontSize: 16, color: todoList.isNotEmpty ? Colors.black : Colors.grey),
-                ),
-              ],
-            ),
+            height: 70, // 고정 높이 설정
+            child: todoList.isNotEmpty && !todoList.every((todo) => todo.is_completed)
+                ? Row(
+                children: [
+                  // 체크박스가 체크된 상태를 나타내는 이미지
+                  GestureDetector(
+                    onTap: () async {
+                      if (todoList.isNotEmpty) {
+                        setState(() {
+                          // 체크 상태를 변경
+                          todoList[0].is_completed = !todoList[0].is_completed;
+                        });
+                        // Firestore에 업데이트
+                        await store.setTodo(email, todoList[0]);
+                        // 체크 상태를 변경한 후 진행률 업데이트
+                        await getTodoList();
+                      }
+                    },
+                    child: Image.asset(
+                      todoList[0].is_completed
+                          ? 'assets/images/checkbox.png' // 체크된 상태 이미지
+                          : 'assets/images/uncheckbox.png', // 체크 해제 상태 이미지
+                      width: 30,
+                      height: 30,
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Text(
+                    todoList[0].name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                ]
+            )
+                : Container(), // 모든 항목이 완료된 경우 빈 컨테이너 반환
           ),
         ],
       ),
