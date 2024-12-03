@@ -214,7 +214,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => AchievePage()),
+                      MaterialPageRoute(builder: (context) => AchievePage(userEmail: email,)),
                     );
                   },
                   child: const Text(
