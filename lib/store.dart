@@ -141,7 +141,6 @@ class Store {
   Future<List<Todo>?> getTodoList(String email) async {
     final ref = store.collection("users").doc(email).collection("todo")
         .where("priority", isNotEqualTo: null)
-        .orderBy("date", descending: false)
         .orderBy("priority", descending: false)
         .withConverter(
       fromFirestore: (snapshot, options) => Todo.fromFirestore(snapshot, options),
@@ -177,18 +176,43 @@ class Store {
   }
 
 
-  Future<void> setTodoPriorty(String email,Todo updatedTodo, int priority) async{
-    List<Todo> todoList = getTodoList(email) as List<Todo>;
-    int index = todoList.indexWhere((todo) => todo.priority == updatedTodo.priority);
+  Future<void> setTodoPriority(String email, Todo updatedTodo, int willchangep) async {
+    List<Todo>? todoList = await getTodoList(email);
 
-    for(int i=priority;i<index;i++){
-      todoList[i].priority++;
-      setTodo(email, todoList[i]);
+    int currentIndex = todoList!.indexWhere((todo) => todo.priority == updatedTodo.priority);
+    print("완료됨 ${todoList[currentIndex].is_completed}");
+
+    if (willchangep > currentIndex && willchangep != -1) {
+      if(todoList[currentIndex].priority != -1){
+        for (int i = 0; i < todoList.length; i++) {
+          if(todoList[i].priority>todoList[currentIndex].priority){
+            todoList[i].priority--;
+            await setTodo(email, todoList[i]);
+          }
+        }
+      }
+    } else if (willchangep < currentIndex && willchangep != -1) {
+      if(todoList[currentIndex].priority != -1){
+        for (int i = 0; i < todoList.length; i++) {
+          if(todoList[i].priority<todoList[currentIndex].priority){
+            todoList[i].priority++;
+            await setTodo(email, todoList[i]);
+          }
+        }
+      }
+    } else if (willchangep == -1){
+      for(int i = 0;i < todoList.length; i++){
+        if(todoList[i].priority>todoList[currentIndex].priority){
+          todoList[i].priority--;
+          await setTodo(email, todoList[i]);
+        }
+      }
     }
 
-    todoList[index].priority = priority;
-    setTodo(email, todoList[index]);
+    todoList[currentIndex].priority = willchangep;
+    await setTodo(email, todoList[currentIndex]); // await 사용하여 비동기 작업 처리
   }
+
 
   Future<void> setTodo(String email, Todo todo) async {
     final ref = FirebaseFirestore.instance
@@ -201,15 +225,24 @@ class Store {
     );
 
     try {
-      if(ref.doc("placeholder") != null){
-        ref.doc("placeholder").delete();
+      // 기존 항목 검색
+      final querySnapshot = await ref.where('name', isEqualTo: todo.name).get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // 기존 항목이 있으면 업데이트
+        final docRef = querySnapshot.docs.first.reference;
+        await docRef.set(todo);
+        print('Todo 업데이트 성공');
+      } else {
+        // 기존 항목이 없으면 새 항목 추가
+        await ref.add(todo);
+        print('Todo 추가 성공');
       }
-      await ref.add(todo);
-      print('Todo 추가 성공');
     } catch (e) {
-      print('Todo 추가 실패: $e');
+      print('Todo 처리 실패: $e');
     }
   }
+
 
 
   Future<Todo?> getTodo(String email, Timestamp date, String category, int priority) async { // 특정 todo 불러오기
@@ -232,4 +265,32 @@ class Store {
       return null;
     }
   }
+
+  Future<void> removeTodo(String email, Todo todo) async {
+    final ref = FirebaseFirestore.instance
+        .collection("users")
+        .doc(email)
+        .collection("todo")
+        .withConverter<Todo>(
+      fromFirestore: (snapshot, options) => Todo.fromFirestore(snapshot, options),
+      toFirestore: (todo, options) => todo.toFirestore(),
+    );
+
+    try {
+      // 기존 항목 검색
+      final querySnapshot = await ref.where('name', isEqualTo: todo.name).get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // 기존 항목이 있으면 삭제
+        final docRef = querySnapshot.docs.first.reference;
+        await docRef.delete();
+        print('Todo 삭제 성공');
+      } else {
+        print('삭제할 Todo 항목을 찾지 못했습니다.');
+      }
+    } catch (e) {
+      print('Todo 삭제 실패: $e');
+    }
+  }
+
 }
