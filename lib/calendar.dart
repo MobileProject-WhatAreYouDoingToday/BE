@@ -120,7 +120,7 @@ class _CalendarPageState extends State<CalendarPage> {
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(125.0),
           child: Padding(
-            padding: const EdgeInsets.only(left: 25.0, top: 40.0),
+            padding: const EdgeInsets.only(left: 25.0, top: 0.0),
             child: AppBar(
               backgroundColor: Colors.white,
               elevation: 0,
@@ -129,7 +129,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MainWidget(auth: auth,)),
+                    MaterialPageRoute(builder: (context) => MainWidget(auth: auth)),
                   );
                 },
                 child: Image.asset("assets/images/chart.png"),
@@ -146,7 +146,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => TodoListPage(auth:auth)),
+                        MaterialPageRoute(builder: (context) => TodoListPage(auth: auth)),
                       );
                     },
                     child: Image.asset("assets/images/todobutton.png"),
@@ -189,10 +189,6 @@ class _CalendarPageState extends State<CalendarPage> {
                         fontSize: 16,
                         color: Colors.black,
                       ),
-                      weekendTextStyle: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
                       disabledTextStyle: TextStyle(
                         fontSize: 16,
                         color: Colors.grey,
@@ -209,56 +205,59 @@ class _CalendarPageState extends State<CalendarPage> {
                       titleTextFormatter: (date, locale) =>
                           DateFormat.MMMM(locale).format(date),
                     ),
-                    daysOfWeekHeight: 55,
-                    rowHeight: 80,
+                    daysOfWeekHeight: 15,
+                    rowHeight: 115,
                     calendarBuilders: CalendarBuilders(
+                      defaultBuilder: (context, date, focusedDay) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '${date.day}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: date.weekday == DateTime.saturday
+                                    ? Colors.blue
+                                    : date.weekday == DateTime.sunday
+                                    ? Colors.red
+                                    : Colors.black,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                       markerBuilder: (context, date, events) {
+                        // 이벤트가 있을 경우에만 이벤트 출력
                         if (events.isNotEmpty) {
                           final eventList = events.cast<Event>();
                           return Column(
-                            children: eventList.map((event) {
-                              return Container(
-                                margin: const EdgeInsets.only(top: 2),
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: event.color,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  event.title,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                            mainAxisAlignment: MainAxisAlignment.start, // 날짜와 이벤트를 위아래로 배치
+                            children: [
+                              const SizedBox(height: 62), // 날짜와 이벤트 간 간격
+                              // 이벤트 출력
+                              ...eventList.map((event) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 1.5), // 이벤트 간 간격
+                                  child: Text(
+                                    event.title, // 이벤트 제목
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: event.color, // 이벤트 색상
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              );
-                            }).toList(),
+                                );
+                              }).toList(),
+                            ],
                           );
                         }
+                        // 이벤트가 없을 경우 아무것도 출력하지 않음
                         return const SizedBox.shrink();
                       },
+
                     ),
                   ),
                   const SizedBox(height: 8.0),
-                  ValueListenableBuilder<List<Event>>(
-                    valueListenable: _selectedEvents,
-                    builder: (context, events, _) {
-                      return Column(
-                        children: events
-                            .map((event) => ListTile(
-                          title: Text(
-                            event.title,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ))
-                            .toList(),
-                      );
-                    },
-                  ),
                 ],
               ),
             ),
@@ -276,7 +275,11 @@ class _CalendarPageState extends State<CalendarPage> {
                     ),
                   ),
                   onPressed: () {
-                    // 버튼 클릭 시 동작 정의
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => AchievePage(userEmail: email)),
+                    );
                   },
                   child: const Text(
                     '이번 달 달성률 분석 >',
@@ -287,6 +290,7 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
           ],
         ),
+
       ),
     );
   }
@@ -297,5 +301,3 @@ class Event {
   final Color color;
   Event(this.title, this.color);
 }
-
-
