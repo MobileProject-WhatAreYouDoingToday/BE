@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:whatareyoudoingtoday/MainWidget.dart';
 import 'auth.dart';
 import 'creation.dart';
-import 'process.dart' as process;
 import 'store.dart'; // Todo 클래스를 포함한 task.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
