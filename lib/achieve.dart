@@ -98,12 +98,19 @@ class AchievePage extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
                           child: Row(
                             children: [
-                              CircleAvatar(
-                                backgroundColor: achievement['color'],
-                                radius: 24,
-                                child: Icon(
-                                  achievement['icon'] as IconData,
-                                  color: Colors.white,
+                              // 원형 이미지
+                              Container(
+                                width: 48,
+                                height: 48,
+                                // decoration: BoxDecoration(
+                                //   color: achievement['color'], // 배경색
+                                //   shape: BoxShape.circle,
+                                // ),
+                                child: ClipOval(
+                                  child: Image.asset(
+                                    achievement['imagePath'] as String,
+                                    fit: BoxFit.contain, // 이미지 비율 유지
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 16),
@@ -160,11 +167,11 @@ class AchievePage extends StatelessWidget {
       Color(0xFF61E4C5),
       Color(0xFFDBBEFC),
     ];
-    const icons = [
-      Icons.menu_book,
-      Icons.fitness_center,
-      Icons.edit,
-      Icons.mood,
+    const imagePaths = [
+      'assets/images/readingbtn.png', // 독서
+      'assets/images/healthbtn.png', // 운동
+      'assets/images/studybtn.png', // 공부
+      'assets/images/hobbybtn.png', // 취미
     ];
 
     return categories.asMap().entries.map((entry) {
@@ -182,7 +189,7 @@ class AchievePage extends StatelessWidget {
         'total': totalCount,
         'rate': rate,
         'color': colors[categoryIndex],
-        'icon': icons[categoryIndex],
+        'imagePath': imagePaths[categoryIndex], // 이미지 경로 추가
       };
     }).toList();
   }
@@ -215,3 +222,4 @@ class AchieveBarChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+

@@ -118,7 +118,7 @@ class _CalendarPageState extends State<CalendarPage> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(125.0),
+          preferredSize: const Size.fromHeight(100.0),
           child: Padding(
             padding: const EdgeInsets.only(left: 25.0, top: 0.0),
             child: AppBar(
@@ -202,9 +202,13 @@ class _CalendarPageState extends State<CalendarPage> {
                     headerStyle: HeaderStyle(
                       formatButtonVisible: false,
                       titleCentered: true,
-                      titleTextFormatter: (date, locale) =>
-                          DateFormat.MMMM(locale).format(date),
+                      titleTextFormatter: (date, locale) => DateFormat.MMMM(locale).format(date),
+                      titleTextStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold), // 제목 스타일
+                      headerPadding: const EdgeInsets.symmetric(vertical: 10), // 제목과 버튼 간 여백
+                      leftChevronPadding: const EdgeInsets.only(left: 20), // 왼쪽 버튼 간격
+                      rightChevronPadding: const EdgeInsets.only(right: 20), // 오른쪽 버튼 간격
                     ),
+
                     daysOfWeekHeight: 15,
                     rowHeight: 115,
                     calendarBuilders: CalendarBuilders(
@@ -241,7 +245,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                   child: Text(
                                     event.title, // 이벤트 제목
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 10,
                                       color: event.color, // 이벤트 색상
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -265,6 +269,7 @@ class _CalendarPageState extends State<CalendarPage> {
               bottom: 40,
               left: MediaQuery.of(context).size.width / 2 - 327 / 2,
               child: SizedBox(
+
                 width: 327,
                 height: 60,
                 child: ElevatedButton(
