@@ -13,7 +13,6 @@ class Auth { // 계정 정보를 담는 클래스
   final Store store = Store();
   UserCredential? userCredential;
 
-
   Future<bool> logIn(String email, String password) async { // 로그인을 할 경우 userCredintial로 로그인한 계정 정보를 저장함.
     bool b;
     try {
