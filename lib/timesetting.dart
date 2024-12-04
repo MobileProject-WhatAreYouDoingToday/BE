@@ -21,6 +21,7 @@ class _TimeSettingState extends State<TimeSetting> {
   @override
   Widget build(BuildContext context) {
     DateTime selectingTime = selectedTime;
+    DateTime saveDate = new DateTime(selectedTime.year,selectedTime.month,selectedTime.day);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -117,6 +118,10 @@ class _TimeSettingState extends State<TimeSetting> {
             // 저장 버튼
             GestureDetector(
               onTap: () {
+                setState(() {
+                  selectingTime = new DateTime(saveDate.year,saveDate.month,saveDate.day,selectingTime.hour,selectingTime.minute);
+                });
+                print("저장할 시간 ${selectingTime}");
                 Navigator.pop(context, selectingTime); // TimeSetting으로 selectedTime 반환
               },
               child: Container(

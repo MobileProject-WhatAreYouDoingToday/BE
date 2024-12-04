@@ -21,7 +21,7 @@ class _TodoListPageState extends State<TodoListPage> {
 
   List<Todo> tasks = []; // Todo 클래스를 사용하는 리스트
   List<bool> isMemoVisible = [];
-  DateTime selectday = DateTime(0,0,0,0);
+  DateTime selectday = DateTime(0,0,0);
   Timestamp timestamp = Timestamp(0, 0);
   String email = "";
 
@@ -32,7 +32,7 @@ class _TodoListPageState extends State<TodoListPage> {
     super.initState();
     email = auth.userCredential!.user!.email!;
     DateTime now = DateTime.now();
-    selectday = DateTime(now.year, now.month, now.day);
+    selectday = DateTime(now.year, now.month, now.day, now.hour, now.minute);
     timestamp = Timestamp.fromDate(selectday);
     _loadTasks(); // 초기화 시 할 일 목록 로드
   }
@@ -65,8 +65,12 @@ class _TodoListPageState extends State<TodoListPage> {
 
 
   void _prevDate() {
+    DateTime now = DateTime.now();
     setState(() {
       selectday = selectday.subtract(Duration(days: 1));
+      DateTime saveDate = new DateTime(selectday.year,selectday.month,selectday.day,now.hour,now.minute);
+      selectday = saveDate;
+      print(selectday);
       timestamp = Timestamp.fromDate(selectday);
       tasks = [];
       _loadTasks(); // 초기화 시 할 일 목록 로드
@@ -74,8 +78,11 @@ class _TodoListPageState extends State<TodoListPage> {
   }
 
   void _nextDate() {
+    DateTime now = DateTime.now();
     setState(() {
       selectday = selectday.add(Duration(days: 1));
+      DateTime saveDate = new DateTime(selectday.year,selectday.month,selectday.day,now.hour,now.minute);
+      selectday = saveDate;
       timestamp = Timestamp.fromDate(selectday);
       tasks = [];
       _loadTasks(); // 초기화 시 할 일 목록 로드
@@ -101,7 +108,7 @@ class _TodoListPageState extends State<TodoListPage> {
   void _navigateToCreationPage() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CreationPage(email: email, todo: null,)),
+      MaterialPageRoute(builder: (context) => CreationPage(email: email, todo: null, selectDay: selectday)),
     );
 
     if (result != null && result['todo'] != null) {
@@ -300,7 +307,7 @@ class _TodoListPageState extends State<TodoListPage> {
                               child: GestureDetector(
                                 onTap: () {
                                   Navigator.push(context,
-                                    MaterialPageRoute(builder: (context) => CreationPage(email: email, todo: tasks[index],),));
+                                    MaterialPageRoute(builder: (context) => CreationPage(email: email, todo: tasks[index], selectDay: tasks[index].date.toDate(),),));
                                 },
                                 child: Text(
                                   tasks[index].name,

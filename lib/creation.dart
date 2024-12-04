@@ -9,15 +9,19 @@ import 'notification_service.dart';
 class CreationPage extends StatefulWidget {
   final String email;
   final Todo? todo;
-  const CreationPage({super.key, required this.email, required this.todo});
+  final DateTime selectDay;
+
+
+  const CreationPage({super.key, required this.email, required this.todo, required this.selectDay});
 
   @override
-  _CreationPageState createState() => _CreationPageState(email, todo);
+  _CreationPageState createState() => _CreationPageState(email, todo, selectDay);
 }
 
 class _CreationPageState extends State<CreationPage> {
   final String email;
   final Todo? todo;
+  DateTime selectDay;
 
   String taskTitle = '';
   String taskMemo = '';
@@ -29,7 +33,7 @@ class _CreationPageState extends State<CreationPage> {
   TextEditingController memoController = TextEditingController();
 
 
-  _CreationPageState(this.email, this.todo); // 알림 시간 변수 추가
+  _CreationPageState(this.email, this.todo, this.selectDay); // 알림 시간 변수 추가
 
   @override
   @override
@@ -45,13 +49,16 @@ class _CreationPageState extends State<CreationPage> {
 
       // todo의 date가 null인 경우 대비
       try {
+        print("선택 날짜 : ${selectDay}");
         selectedTime = todo!.date.toDate();
       } catch (e) {
-        selectedTime = DateTime.now();
+        print("선택 날짜 : ${selectDay}");
+        selectedTime = selectDay;
         print("Error initializing selectedTime from todo: $e");
       }
     } else {
-      selectedTime = DateTime.now(); // 기본값 설정
+      print("선택 날짜 : ${selectDay}");
+      selectedTime = selectDay; // 기본값 설정
     }
   }
 
@@ -62,7 +69,7 @@ class _CreationPageState extends State<CreationPage> {
         Todo newTodo = Todo(
           name: taskTitle,
           category: selectedCategory != "기타" ? selectedCategory.toString() : "기타", // 카테고리 설정
-          date: Timestamp.now(), // 현재 시간으로 설정
+          date: Timestamp.fromDate(selectedTime), // 바꾼 시간으로 설정
           isNotification: isNotificationOn, // 알림 여부 설정
           priority: 0, // 기본 우선순위
           isCompleted: false, // 기본 완료 상태
