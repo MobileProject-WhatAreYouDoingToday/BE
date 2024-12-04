@@ -130,9 +130,9 @@ class _CalendarPageState extends State<CalendarPage> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(100.0),
+          preferredSize: const Size.fromHeight(110.0),
           child: Padding(
-            padding: const EdgeInsets.only(left: 25.0, top: 0.0),
+            padding: const EdgeInsets.only(left: 25.0, top: 40.0),
             child: AppBar(
               backgroundColor: Colors.white,
               elevation: 0,
