@@ -134,8 +134,7 @@ class _TodoListPageState extends State<TodoListPage> {
     if(newIndex > oldIndex){
       newIndex--;
     }
-    print("옛날 것 : ${oldIndex}");
-    print("최근 것 : ${newIndex}");
+
     setState(() {
       final Todo task = tasks.removeAt(oldIndex);
       tasks.insert(newIndex, task);
@@ -146,7 +145,6 @@ class _TodoListPageState extends State<TodoListPage> {
         }
       } else if (newIndex < oldIndex) {
         for(int i = oldIndex; i > newIndex; i--){
-          print("${tasks.length -1 -oldIndex}보다 크거나 같고 ${newIndex}보다 작거나 같은 것만 뺌");
           tasks[i].priority--;
         }
       }
