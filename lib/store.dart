@@ -177,41 +177,58 @@ class Store {
 
 
   Future<void> setTodoPriority(String email, Todo updatedTodo, int willchangep) async {
-    List<Todo>? todoList = await getTodoList(email);
+    final ref = FirebaseFirestore.instance.collection("users").doc(email).collection("todo");
 
+    List<Todo>? todoList = await getTodoList(email);
     int currentIndex = todoList!.indexWhere((todo) => todo.priority == updatedTodo.priority);
     print("완료됨 ${todoList[currentIndex].is_completed}");
 
-    if (willchangep > currentIndex && willchangep != -1) {
-      if(todoList[currentIndex].priority != -1){
-        for (int i = 0; i < todoList.length; i++) {
-          if(todoList[i].priority>todoList[currentIndex].priority){
-            todoList[i].priority--;
-            await setTodo(email, todoList[i]);
-          }
-        }
-      }
-    } else if (willchangep < currentIndex && willchangep != -1) {
-      if(todoList[currentIndex].priority != -1){
-        for (int i = 0; i < todoList.length; i++) {
-          if(todoList[i].priority<todoList[currentIndex].priority){
-            todoList[i].priority++;
-            await setTodo(email, todoList[i]);
-          }
-        }
-      }
-    } else if (willchangep == -1){
-      for(int i = 0;i < todoList.length; i++){
-        if(todoList[i].priority>todoList[currentIndex].priority){
+    WriteBatch batch = FirebaseFirestore.instance.batch();
+
+    // 우선순위 갱신
+    for (int i = 0; i < todoList.length; i++) {
+      if (willchangep > currentIndex && willchangep != -1) {
+        if (todoList[i].priority > todoList[currentIndex].priority) {
           todoList[i].priority--;
-          await setTodo(email, todoList[i]);
+          QuerySnapshot snapshot = await ref.where('priority', isEqualTo: todoList[i].priority + 1).get();
+          if (snapshot.docs.isNotEmpty) {
+            DocumentReference todoRef = snapshot.docs.first.reference;
+            batch.update(todoRef, {'priority': todoList[i].priority});
+          }
+        }
+      } else if (willchangep < currentIndex && willchangep != -1) {
+        if (todoList[i].priority < todoList[currentIndex].priority) {
+          todoList[i].priority++;
+          QuerySnapshot snapshot = await ref.where('priority', isEqualTo: todoList[i].priority - 1).get();
+          if (snapshot.docs.isNotEmpty) {
+            DocumentReference todoRef = snapshot.docs.first.reference;
+            batch.update(todoRef, {'priority': todoList[i].priority});
+          }
+        }
+      } else if (willchangep == -1) {
+        if (todoList[i].priority > todoList[currentIndex].priority) {
+          todoList[i].priority--;
+          QuerySnapshot snapshot = await ref.where('priority', isEqualTo: todoList[i].priority + 1).get();
+          if (snapshot.docs.isNotEmpty) {
+            DocumentReference todoRef = snapshot.docs.first.reference;
+            batch.update(todoRef, {'priority': todoList[i].priority});
+          }
         }
       }
     }
 
     todoList[currentIndex].priority = willchangep;
-    await setTodo(email, todoList[currentIndex]); // await 사용하여 비동기 작업 처리
+    QuerySnapshot snapshot = await ref.where('priority', isEqualTo: updatedTodo.priority).get();
+    if (snapshot.docs.isNotEmpty) {
+      DocumentReference updatedTodoRef = snapshot.docs.first.reference;
+      batch.update(updatedTodoRef, {'priority': willchangep});
+    }
+
+    // 모든 작업을 한 번에 커밋
+    await batch.commit();
+    print('모든 배치 작업 커밋 성공');
   }
+
 
 
   Future<void> setTodo(String email, Todo todo) async {
@@ -225,23 +242,33 @@ class Store {
     );
 
     try {
+      WriteBatch batch = FirebaseFirestore.instance.batch();
+
       // 기존 항목 검색
-      final querySnapshot = await ref.where('name', isEqualTo: todo.name).get();
+      final querySnapshot = await ref
+          .where('name', isEqualTo: todo.name)
+          .where('date', isEqualTo: todo.date)
+          .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         // 기존 항목이 있으면 업데이트
         final docRef = querySnapshot.docs.first.reference;
-        await docRef.set(todo);
-        print('Todo 업데이트 성공');
+        batch.update(docRef, todo.toFirestore());
+        print('Todo 업데이트 배치 추가됨');
       } else {
         // 기존 항목이 없으면 새 항목 추가
         await ref.add(todo);
-        print('Todo 추가 성공');
+        print('Todo 추가 작업 추가됨');
       }
+
+      // 배치 작업 커밋
+      await batch.commit();
+      print('모든 배치 작업 커밋 성공');
     } catch (e) {
       print('Todo 처리 실패: $e');
     }
   }
+
 
 
 
