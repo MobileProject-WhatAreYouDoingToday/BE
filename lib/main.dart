@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'networkalert.dart'; // NetworkMonitor 가져오기
+import 'alert.dart'; // NetworkMonitor 가져오기
 import 'auth.dart'; // LoginWidget 가져오기
 
 Future<void> main() async {

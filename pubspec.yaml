@@ -9,20 +9,21 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_email_sender: ^6.0.3 # 이메일 보내는 라이브러리 일단 함 해보긴 함
-  table_calendar:
-  intl: ^0.17.0
+  table_calendar: ^3.1.2
+  intl: ^0.19.0
   flutter_time_picker_spinner: ^2.0.0
   cupertino_icons: ^1.0.8
   firebase_core: ^3.8.0
   firebase_auth: ^5.3.3
   cloud_firestore: ^5.5.0
   connectivity_plus: ^6.1.0
-
+  flutter_local_notifications: ^18.0.1
+  permission_handler: ^11.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 flutter:
   uses-material-design: true
   assets:
