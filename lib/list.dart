@@ -104,7 +104,11 @@ class _TodoListPageState extends State<TodoListPage> {
     );
 
     if (result != null && result['todo'] != null) {
-      _addTask(result['todo']); // 생성된 Todo를 리스트에 추가
+      setState(() {
+        tasks.insert(0,result['todo']); // 생성된 Todo를 리스트에 추가
+        isMemoVisible.add(false);
+      });
+
     }
   }
 
@@ -138,22 +142,56 @@ class _TodoListPageState extends State<TodoListPage> {
   void _toggleTaskPosition(int index) {
     setState(() {
       tasks[index].is_completed = !tasks[index].is_completed;
-    });
 
-    Store().setTodo(email, tasks[index]).then((_) {
       if (tasks[index].is_completed) {
-        Store().setTodoPriority(email, tasks[index], -1).then((_) {
-          _loadTasks();
-        });
+        // 완료된 항목을 리스트 맨 아래로 이동
+        Todo completedTask = tasks.removeAt(index);
+        tasks.add(completedTask);
+
+        // 우선순위 업데이트
+        for (int i = 0; i < tasks.length; i++) {
+          tasks[i].priority = tasks.length - i - 1;
+        }
       } else {
-        print("가장 나중의 priority = ${tasks.first.priority}");
-        Store().setTodoPriority(email, tasks[index], tasks.first.priority + 1).then((_) {
-          _loadTasks();
-        });
+        // 미완료 항목을 리스트 맨 위로 이동
+        Todo uncompletedTask = tasks.removeAt(index);
+        tasks.insert(0, uncompletedTask);
+
+        // 우선순위 업데이트
+        for (int i = 0; i < tasks.length; i++) {
+          tasks[i].priority = tasks.length - i - 1;
+        }
       }
     });
 
+    // Firestore에 업데이트
+    _updateTasksInFirestore();
   }
+
+  Future<void> _updateTasksInFirestore() async {
+    final ref = FirebaseFirestore.instance.collection("users").doc(email).collection("todo");
+    WriteBatch batch = FirebaseFirestore.instance.batch();
+
+    try {
+      for (var task in tasks) {
+        QuerySnapshot snapshot = await ref
+            .where('name', isEqualTo: task.name)
+            .where('date', isEqualTo: task.date)
+            .get();
+        if (snapshot.docs.isNotEmpty) {
+          DocumentReference todoRef = snapshot.docs.first.reference;
+          batch.update(todoRef, {'priority': task.priority, 'is_completed': task.is_completed});
+        } else {
+          batch.set(ref.doc(), task.toFirestore());
+        }
+      }
+      await batch.commit();
+      print('모든 Todo 우선순위 업데이트 성공');
+    } catch (error) {
+      print("오류 발생: $error");
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
