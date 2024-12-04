@@ -9,7 +9,6 @@ import 'notification_service.dart';
 class CreationPage extends StatefulWidget {
   final String email;
   final Todo? todo;
-
   const CreationPage({super.key, required this.email, required this.todo});
 
   @override
@@ -33,16 +32,26 @@ class _CreationPageState extends State<CreationPage> {
   _CreationPageState(this.email, this.todo); // 알림 시간 변수 추가
 
   @override
-  void initState(){
+  @override
+  void initState() {
     super.initState();
-    if(todo!=null){
+    if (todo != null) {
       taskTitle = todo!.name;
       nameController.text = todo!.name;
       taskMemo = todo!.description;
       memoController.text = todo!.description;
       isNotificationOn = todo!.isNotification;
       selectedCategory = todo!.category;
-      selectedTime = todo!.date.toDate();
+
+      // todo의 date가 null인 경우 대비
+      try {
+        selectedTime = todo!.date.toDate();
+      } catch (e) {
+        selectedTime = DateTime.now();
+        print("Error initializing selectedTime from todo: $e");
+      }
+    } else {
+      selectedTime = DateTime.now(); // 기본값 설정
     }
   }
 
@@ -59,28 +68,12 @@ class _CreationPageState extends State<CreationPage> {
           isCompleted: false, // 기본 완료 상태
           description: taskMemo,
         );
-        if (isNotificationOn) {
-          // 현재 시간과 선택된 시간의 차이를 계산
-          final now = TimeOfDay.now();
-          final notificationTime = selectedTime.hour * 60 + selectedTime.minute;
-          final currentTime = now.hour * 60 + now.minute;
 
-          final difference = notificationTime - currentTime;
-          if (difference > 0) {
-            // 알림 예약 (예: difference 분 후에 알림 울리게 설정)
-            Future.delayed(Duration(minutes: difference), () {
-              NotificationService.showNotification('할 일 알림', '할 일이 있습니다: $taskTitle');
-            });
-          } else {
-            // 선택된 시간이 이미 지났다면 즉시 알림
-            NotificationService.showNotification('할 일 알림', '할 일이 있습니다: $taskTitle');
-          }
-        }
         print(newTodo.date);
         List<Todo>? todoList = await Store().getSelectedDateTodoList(email, newTodo.date);
         int lastP=0;
 
-        for(int i=0;i<todoList!.length;i++){
+        for(int i=0;i<todoList.length;i++){
           if(todoList[i].priority==lastP){
             lastP = todoList[i].priority + 1;
             print('라스트p는 {$lastP}');
@@ -104,23 +97,6 @@ class _CreationPageState extends State<CreationPage> {
       todo!.description = taskMemo;
 
       await Store().setTodo(email, todo!);
-      if (isNotificationOn) {
-        // 현재 시간과 선택된 시간의 차이를 계산
-        final now = TimeOfDay.now();
-        final notificationTime = selectedTime.hour * 60 + selectedTime.minute;
-        final currentTime = now.hour * 60 + now.minute;
-
-        final difference = notificationTime - currentTime;
-        if (difference > 0) {
-          // 알림 예약 (예: difference 분 후에 알림 울리게 설정)
-          Future.delayed(Duration(minutes: difference), () {
-            NotificationService.showNotification('할 일 알림', '할 일이 있습니다: $taskTitle');
-          });
-        } else {
-          // 선택된 시간이 이미 지났다면 즉시 알림
-          NotificationService.showNotification('할 일 알림', '할 일이 있습니다: $taskTitle');
-        }
-      }
       _goBack();
     }
 
@@ -133,25 +109,14 @@ class _CreationPageState extends State<CreationPage> {
   // 알림 시간 설정 페이지로 이동
   void _navigateToTimeSetting() async {
     // TimeSetting 페이지로 이동
-    final result = await Navigator.push(
+    selectedTime = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => TimeSetting()),
+      MaterialPageRoute(builder: (context) => TimeSetting(selectedTime: selectedTime,)),
     );
-
     // 반환된 데이터 처리
-    if (result != null) {
-      final newTodo = result['todo'] as Todo; // Todo 객체
-      final DateTime selectedTime = result['selectedTime']; // 선택된 시간
-      //final int? reminderTime = result['reminderTime'];
+    setState(() {
 
-      setState(() {
-        this.selectedTime = selectedTime; // 선택된 시간 업데이트
-        isNotificationOn = newTodo.isNotification;
-        taskMemo = newTodo.description;// 알림 여부 업데이트
-        this.reminderTime = reminderTime; // 알림 시간 업데이트
-      });
-
-    }
+    });
 
   }
 
@@ -258,14 +223,14 @@ class _CreationPageState extends State<CreationPage> {
                       children: [
                         Padding(
                           padding: EdgeInsets.only(left: 100.0),
-                          child: Text(
-                            '${selectedTime.hour} : ${selectedTime.minute}',
-                            style: TextStyle(
-                              fontSize: 35,
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
+                            child: Text(
+                              '${selectedTime.hour.toString().padLeft(2, '0')} : ${selectedTime.minute.toString().padLeft(2, '0')}',
+                              style: TextStyle(
+                                fontSize: 35,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
                         ),
                         GestureDetector(
                           onTap: () {

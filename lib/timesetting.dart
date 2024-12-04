@@ -5,16 +5,23 @@ import 'store.dart'; // Todo 클래스를 포함한 task.dart
 import 'creation.dart';
 
 class TimeSetting extends StatefulWidget {
+  final DateTime selectedTime;
+
+  const TimeSetting({super.key, required this.selectedTime});
   @override
-  _TimeSettingState createState() => _TimeSettingState();
+  _TimeSettingState createState() => _TimeSettingState(selectedTime);
 }
 
 class _TimeSettingState extends State<TimeSetting> {
-  DateTime selectedTime = DateTime.now();
+  final DateTime selectedTime;
+
+  _TimeSettingState(this.selectedTime);
   int? reminderTime;
 
   @override
   Widget build(BuildContext context) {
+    DateTime selectingTime = selectedTime;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -56,9 +63,8 @@ class _TimeSettingState extends State<TimeSetting> {
                   time: selectedTime,
                   is24HourMode: true,
                   onTimeChange: (time) {
-                    setState(() {
-                      selectedTime = time; // 선택한 시간 저장
-                    });
+                    selectingTime = time; // 선택한 시간 저장
+                    print("바꾼 시간 ${selectingTime}");
                   },
                   normalTextStyle: TextStyle(
                     fontSize: 30, // 일반 텍스트 크기
@@ -111,7 +117,7 @@ class _TimeSettingState extends State<TimeSetting> {
             // 저장 버튼
             GestureDetector(
               onTap: () {
-                _saveTodo(); // Todo 객체 저장 함수 호출
+                Navigator.pop(context, selectingTime); // TimeSetting으로 selectedTime 반환
               },
               child: Container(
                 width: 400,
@@ -145,32 +151,6 @@ class _TimeSettingState extends State<TimeSetting> {
   void setReminder(int minutes, String imagePath) {
     setState(() {
       reminderTime = minutes; // 알림 시간 설정
-    });
-  }
-
-  void _saveTodo() {
-    // Todo 객체 생성 및 저장 로직
-    Todo newTodo = Todo(
-      name: '새로운 할 일', // 또는 입력된 제목으로 변경
-      category: '기타', // 카테고리 설정
-      date: Timestamp.now(), // 현재 날짜로 설정
-      isNotification: true, // 알림 여부 설정
-      priority: 0, // 기본 우선순위
-      isCompleted: false, // 기본 완료 상태
-      description: '선택한 시간: ${selectedTime.hour}:${selectedTime.minute}, 알림 시간: ${reminderTime ?? 0} 분', // 선택한 시간으로 설명 설정
-      //task: null, // 필요한 경우 Task 객체 설정
-    );
-
-    // Firestore에 저장
-    FirebaseFirestore.instance.collection('todos').add(newTodo.toFirestore()).then((_) {
-      // CreationPage로 돌아가며 Todo 객체와 selectedTime, reminderTime 반환
-      Navigator.pop(context, {
-        'todo': newTodo,
-        'selectedTime': TimeOfDay.fromDateTime(selectedTime),
-        'reminderTime': reminderTime // reminderTime도 반환
-      });
-    }).catchError((error) {
-      print('저장 실패: $error');
     });
   }
 }
