@@ -114,6 +114,7 @@ class _CreationPageState extends State<CreationPage> {
     return Scaffold(
       backgroundColor: Color(0xFFFFFFFF),
       appBar: AppBar(
+        scrolledUnderElevation: 0,
         backgroundColor: Color(0xFFFFFFFF),
         title: Container(
           alignment: Alignment.center,

@@ -72,7 +72,7 @@ class _CalendarPageState extends State<CalendarPage> {
     setState(() {
       _events = {};
       for (var todo in todoList) {
-        if (todo.is_completed) {
+        if (todo.is_completed && todo.categori !="null") { // is_completed가 true이고 categori가 null이 아닌 경우만 처리
           final todoDate = todo.date.toDate();
           final eventDate = DateTime(todoDate.year, todoDate.month, todoDate.day);
 
@@ -94,11 +94,23 @@ class _CalendarPageState extends State<CalendarPage> {
               eventColor = Colors.grey;
           }
 
-          final event = Event(todo.categori, eventColor);
-          if (_events[eventDate] == null) {
-            _events[eventDate] = [event];
-          } else {
-            _events[eventDate]!.add(event);
+          // 같은 날짜의 동일 카테고리가 모두 완료된 경우에만 이벤트를 추가
+          final sameDateTodos = todoList.where((t) {
+            final tDate = t.date.toDate();
+            return t.categori == todo.categori &&
+                DateTime(tDate.year, tDate.month, tDate.day) == eventDate;
+          });
+
+          if (sameDateTodos.every((t) => t.is_completed)) {
+            final event = Event(todo.categori!, eventColor); // categori는 null이 아님
+            if (_events[eventDate] == null) {
+              _events[eventDate] = [event];
+            } else {
+              // 중복 카테고리가 추가되지 않도록 확인
+              if (!_events[eventDate]!.any((e) => e.title == event.title)) {
+                _events[eventDate]!.add(event);
+              }
+            }
           }
         }
       }
