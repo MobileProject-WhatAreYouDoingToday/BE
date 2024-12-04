@@ -100,7 +100,7 @@ class _TodoListPageState extends State<TodoListPage> {
   void _navigateToCreationPage() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CreationPage(email: email,)),
+      MaterialPageRoute(builder: (context) => CreationPage(email: email, todo: null,)),
     );
 
     if (result != null && result['todo'] != null) {
@@ -306,15 +306,22 @@ class _TodoListPageState extends State<TodoListPage> {
                             ),
                             SizedBox(width: 20),
                             Expanded(
-                              child: Text(
-                                tasks[index].name,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.none,
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(context,
+                                    MaterialPageRoute(builder: (context) => CreationPage(email: email, todo: tasks[index],),));
+                                },
+                                child: Text(
+                                  tasks[index].name,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    decoration: TextDecoration.none,
+                                  ),
                                 ),
                               ),
-                            ),
+                            )
+                            ,
                             GestureDetector(
                               onTap: () => _toggleMemoVisibility(index),
                               child: Image.asset(

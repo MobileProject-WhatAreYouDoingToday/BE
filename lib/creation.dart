@@ -5,17 +5,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'store.dart'; // Todo 클래스를 포함한 task.dart
 import 'notification_service.dart';
 
+
 class CreationPage extends StatefulWidget {
   final String email;
+  final Todo? todo;
 
-  const CreationPage({super.key, required this.email});
+  const CreationPage({super.key, required this.email, required this.todo});
 
   @override
-  _CreationPageState createState() => _CreationPageState(email);
+  _CreationPageState createState() => _CreationPageState(email, todo);
 }
 
 class _CreationPageState extends State<CreationPage> {
   final String email;
+  final Todo? todo;
+
   String taskTitle = '';
   String taskMemo = '';
   bool isNotificationOn = false;
@@ -24,7 +28,7 @@ class _CreationPageState extends State<CreationPage> {
   int? reminderTime;
 
 
-  _CreationPageState(this.email); // 알림 시간 변수 추가
+  _CreationPageState(this.email, this.todo); // 알림 시간 변수 추가
 
   Future<void> _saveTask() async {
     if (taskTitle.isNotEmpty) {
