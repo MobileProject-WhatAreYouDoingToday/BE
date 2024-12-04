@@ -131,12 +131,30 @@ class _TodoListPageState extends State<TodoListPage> {
   }
 
   void _onReorder(int oldIndex, int newIndex) {
+    if(newIndex > oldIndex){
+      newIndex--;
+    }
+    print("옛날 것 : ${oldIndex}");
+    print("최근 것 : ${newIndex}");
     setState(() {
-      if (newIndex > oldIndex) newIndex--; // 드래그 시 인덱스 조정
       final Todo task = tasks.removeAt(oldIndex);
       tasks.insert(newIndex, task);
-      // Firestore에서 순서 변경 로직 추가 필요
+      if (newIndex > oldIndex) {
+        for(int i = oldIndex; i < newIndex; i++){
+          tasks[i].priority++;
+
+        }
+      } else if (newIndex < oldIndex) {
+        for(int i = oldIndex; i > newIndex; i--){
+          print("${tasks.length -1 -oldIndex}보다 크거나 같고 ${newIndex}보다 작거나 같은 것만 뺌");
+          tasks[i].priority--;
+        }
+      }
     });
+    tasks[newIndex].priority += oldIndex - newIndex;
+
+
+    _updateTasksInFirestore();
   }
 
   void _toggleTaskPosition(int index) {
@@ -247,7 +265,7 @@ class _TodoListPageState extends State<TodoListPage> {
                 onReorder: _onReorder,
                 itemBuilder: (context, index) {
                   return Dismissible(
-                    key: ValueKey('${tasks[index].priority}_$index'), // 고유 키 설정
+                    key: ValueKey('${tasks[index].date}_${tasks[index].name}'), // 고유 키로 date와 name 사용
                     background: Container(
                       color: Color(0x80FC0404),
                       child: Align(
