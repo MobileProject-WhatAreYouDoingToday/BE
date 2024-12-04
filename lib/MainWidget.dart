@@ -189,6 +189,7 @@ class _MainWidgetState extends State<MainWidget> {
                         });
                         // Firestore에 업데이트
                         await store.setTodo(email, todoList[todoList.length-1]);
+                        await store.setTodoPriority(email, todoList[todoList.length-1], 0);
                         // 체크 상태를 변경한 후 진행률 업데이트
                         await getTodoList();
                       }
