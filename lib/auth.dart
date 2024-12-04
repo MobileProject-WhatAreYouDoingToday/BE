@@ -542,11 +542,6 @@ class SignWidget extends StatelessWidget { // 회원가입 화면
       return;
     }
 
-    // 입력값이 모두 채워진 경우
-    print('Name: $name, Email: $email, Password: $password');
-
-
-    // 예: 서버 통신 후 성공 시 다음 화면으로 이동
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => LoginWidget()),

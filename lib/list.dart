@@ -116,9 +116,7 @@ class _TodoListPageState extends State<TodoListPage> {
         tasks.insert(0,result['todo']); // 생성된 Todo를 리스트에 추가
         isMemoVisible.add(false);
       });
-
-    }
-  }
+    }}
 
   void _navigateToProcessPage() {
     Navigator.push(
@@ -196,6 +194,18 @@ class _TodoListPageState extends State<TodoListPage> {
     await _loadTasks();
   }
 
+  Color weekdayColor(int weekday){
+    Color wColor;
+    if(weekday == 6){
+      wColor = Colors.blue;
+    } else if (weekday == 7){
+      wColor = Colors.red;
+    } else {
+      wColor = Colors.black;
+    }
+    return wColor;
+  }
+
 
 
   @override
@@ -231,8 +241,12 @@ class _TodoListPageState extends State<TodoListPage> {
                     );
                   },
                   child: Text(
-                    DateFormat('yyyy.MM.dd').format(selectday),
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    DateFormat('yy.MM.dd').format(selectday),
+                    style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color:weekdayColor(selectday.weekday)
+                    ),
                   ),
                 ),
                 SizedBox(width: 50),
@@ -306,8 +320,12 @@ class _TodoListPageState extends State<TodoListPage> {
                             Expanded(
                               child: GestureDetector(
                                 onTap: () {
-                                  Navigator.push(context,
+                                  var result = Navigator.push(context,
                                     MaterialPageRoute(builder: (context) => CreationPage(email: email, todo: tasks[index], selectDay: tasks[index].date.toDate(),),));
+
+                                  if(result!=null){
+                                    _loadTasks();
+                                  }
                                 },
                                 child: Text(
                                   tasks[index].name,

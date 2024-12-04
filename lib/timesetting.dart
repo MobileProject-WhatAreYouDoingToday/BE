@@ -61,6 +61,7 @@ class _TimeSettingState extends State<TimeSetting> {
               width: 200, // 원하는 너비 설정
               child: FittedBox(
                 child: TimePickerSpinner(
+                  isForce2Digits: true,
                   time: selectedTime,
                   is24HourMode: true,
                   onTimeChange: (time) {
