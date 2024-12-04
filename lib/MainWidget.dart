@@ -45,7 +45,7 @@ class _MainWidgetState extends State<MainWidget> {
 
         int checked = 0;
         for (int i = 0; i < todoList.length; i++) {
-          if (todoList[i].is_completed) {
+          if (todoList[i].isCompleted) {
             checked++;
           }
         }
@@ -176,32 +176,43 @@ class _MainWidgetState extends State<MainWidget> {
             color: Colors.grey.shade200,
             padding: EdgeInsets.all(25),
             height: 70, // 고정 높이 설정
-            child: todoList.isNotEmpty && !todoList.every((todo) => todo.is_completed)
+            child: todoList.isNotEmpty && !todoList.every((todo) => todo.isCompleted)
                 ? Row(
                 children: [
                   // 체크박스가 체크된 상태를 나타내는 이미지
-                  GestureDetector(
-                    onTap: () async {
-                      if (todoList.isNotEmpty) {
-                        setState(() {
-                          // 체크 상태를 변경
-                          todoList[todoList.length-1].is_completed = !todoList[todoList.length-1].is_completed;
-                        });
-                        // Firestore에 업데이트
-                        await store.setTodo(email, todoList[todoList.length-1]);
-                        await store.setTodoPriority(email, todoList[todoList.length-1], 0);
-                        // 체크 상태를 변경한 후 진행률 업데이트
-                        await getTodoList();
-                      }
-                    },
-                    child: Image.asset(
-                      todoList[todoList.length-1].is_completed
-                          ? 'assets/images/checkbox.png' // 체크된 상태 이미지
-                          : 'assets/images/uncheckbox.png', // 체크 해제 상태 이미지
-                      width: 30,
-                      height: 30,
-                    ),
-                  ),
+                GestureDetector(
+                onTap: () async {
+                  if (todoList.isNotEmpty) {
+                    setState(() {
+                  // 체크 상태를 변경
+                    todoList[todoList.length - 1].isCompleted =
+                    !todoList[todoList.length - 1].isCompleted;
+                  });
+
+                  // Firestore에 업데이트
+                  await store.setTodo(email, todoList[todoList.length - 1]);
+
+                  // 우선순위를 변경하려면 Firestore 문서의 `priority` 필드를 직접 업데이트
+                  final ref = FirebaseFirestore.instance
+                      .collection("users")
+                      .doc(email)
+                      .collection("todo")
+                      .doc(todoList[todoList.length - 1].id); // Todo의 ID로 참조
+
+                  await ref.update({'priority': 0}); // 우선순위를 0으로 설정
+
+                  // 진행률 업데이트
+                  await getTodoList();
+                  }
+                  },
+            child: Image.asset(
+              todoList[todoList.length - 1].isCompleted
+                  ? 'assets/images/checkbox.png' // 체크된 상태 이미지
+                  : 'assets/images/uncheckbox.png', // 체크 해제 상태 이미지
+              width: 30,
+              height: 30,
+            ),
+          ),
                   SizedBox(width: 10),
                   Text(
                     todoList[todoList.length-1].name,

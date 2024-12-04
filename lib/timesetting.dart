@@ -18,6 +18,7 @@ class _TimeSettingState extends State<TimeSetting> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        scrolledUnderElevation: 0,
         backgroundColor: Colors.white,
         title: Container(
           alignment: Alignment.center,
@@ -151,11 +152,11 @@ class _TimeSettingState extends State<TimeSetting> {
     // Todo 객체 생성 및 저장 로직
     Todo newTodo = Todo(
       name: '새로운 할 일', // 또는 입력된 제목으로 변경
-      categori: '기타', // 카테고리 설정
+      category: '기타', // 카테고리 설정
       date: Timestamp.now(), // 현재 날짜로 설정
       isNotification: true, // 알림 여부 설정
       priority: 0, // 기본 우선순위
-      is_completed: false, // 기본 완료 상태
+      isCompleted: false, // 기본 완료 상태
       description: '선택한 시간: ${selectedTime.hour}:${selectedTime.minute}, 알림 시간: ${reminderTime ?? 0} 분', // 선택한 시간으로 설명 설정
       //task: null, // 필요한 경우 Task 객체 설정
     );

@@ -43,7 +43,7 @@ class _TodoListPageState extends State<TodoListPage> {
     Store store = Store();
     List<Todo>? todoList = await store.getTodoList(email);
 
-    print("todolist 크기 = ${todoList?.length}");
+    print("todolist 크기 = ${todoList.length}");
 
     if (todoList != null) {
       // tasks 리스트 초기화
@@ -132,82 +132,63 @@ class _TodoListPageState extends State<TodoListPage> {
   }
 
   void _onReorder(int oldIndex, int newIndex) {
-    if(newIndex > oldIndex){
+    if (newIndex > oldIndex) {
       newIndex--;
     }
 
+    // 항목의 순서를 변경
     setState(() {
       final Todo task = tasks.removeAt(oldIndex);
       tasks.insert(newIndex, task);
-      if (newIndex > oldIndex) {
-        for(int i = oldIndex; i < newIndex; i++){
-          tasks[i].priority++;
-
-        }
-      } else if (newIndex < oldIndex) {
-        for(int i = oldIndex; i > newIndex; i--){
-          tasks[i].priority--;
-        }
-      }
     });
-    tasks[newIndex].priority += oldIndex - newIndex;
 
-
-    _updateTasksInFirestore();
-  }
-
-  void _toggleTaskPosition(int index) {
-    setState(() {
-      tasks[index].is_completed = !tasks[index].is_completed;
-
-      if (tasks[index].is_completed) {
-        // 완료된 항목을 리스트 맨 아래로 이동
-        Todo completedTask = tasks.removeAt(index);
-        tasks.add(completedTask);
-
-        // 우선순위 업데이트
-        for (int i = 0; i < tasks.length; i++) {
-          tasks[i].priority = tasks.length - i - 1;
-        }
-      } else {
-        // 미완료 항목을 리스트 맨 위로 이동
-        Todo uncompletedTask = tasks.removeAt(index);
-        tasks.insert(0, uncompletedTask);
-
-        // 우선순위 업데이트
-        for (int i = 0; i < tasks.length; i++) {
-          tasks[i].priority = tasks.length - i - 1;
-        }
-      }
-    });
+    // 우선순위 재계산
+    for (int i = 0; i < tasks.length; i++) {
+      tasks[i].priority = tasks.length - i - 1;  // 우선순위를 내림차순으로 설정
+    }
 
     // Firestore에 업데이트
     _updateTasksInFirestore();
   }
 
-  Future<void> _updateTasksInFirestore() async {
-    final ref = FirebaseFirestore.instance.collection("users").doc(email).collection("todo");
-    WriteBatch batch = FirebaseFirestore.instance.batch();
 
+  void _toggleTaskPosition(int index) async {
+    setState(() {
+      tasks[index].isCompleted = !tasks[index].isCompleted;
+
+      if (tasks[index].isCompleted) {
+        // 완료된 항목을 리스트 맨 아래로 이동
+        Todo completedTask = tasks.removeAt(index);
+        tasks.add(completedTask);
+      } else {
+        // 미완료 항목을 리스트 맨 위로 이동
+        Todo uncompletedTask = tasks.removeAt(index);
+        tasks.insert(0, uncompletedTask);
+      }
+
+      // 우선순위 재계산
+      for (int i = 0; i < tasks.length; i++) {
+        tasks[i].priority = tasks.length - i - 1;
+      }
+    });
+
+    // Firestore에 업데이트
+    await _updateTasksInFirestore();
+  }
+
+
+  Future<void> _updateTasksInFirestore() async {
     try {
       for (var task in tasks) {
-        QuerySnapshot snapshot = await ref
-            .where('name', isEqualTo: task.name)
-            .where('date', isEqualTo: task.date)
-            .get();
-        if (snapshot.docs.isNotEmpty) {
-          DocumentReference todoRef = snapshot.docs.first.reference;
-          batch.update(todoRef, {'priority': task.priority, 'is_completed': task.is_completed});
-        } else {
-          batch.set(ref.doc(), task.toFirestore());
-        }
+        await Store().setTodo(email, task);  // Firestore에 각 항목을 업데이트
       }
-      await batch.commit();
-      print('모든 Todo 우선순위 업데이트 성공');
+      print('모든 Todo 업데이트 성공');
     } catch (error) {
-      print("오류 발생: $error");
+      print("Firestore 업데이트 중 오류 발생: $error");
     }
+    await _loadTasks();
   }
+
 
 
   @override
@@ -307,7 +288,7 @@ class _TodoListPageState extends State<TodoListPage> {
                               onTap: () => {_toggleTaskPosition(index),
                               },// 체크 상태 토글 및 위치 조정
                               child: Image.asset(
-                                tasks[index].is_completed
+                                tasks[index].isCompleted
                                     ? 'assets/images/checkbox.png'
                                     : 'assets/images/uncheckbox.png',
                                 width: 30,

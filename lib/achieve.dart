@@ -178,8 +178,8 @@ class AchievePage extends StatelessWidget {
       final categoryIndex = entry.key;
       final category = entry.value;
 
-      final categoryTodos = todos.where((todo) => todo.categori == category).toList();
-      final completedCount = categoryTodos.where((todo) => todo.is_completed).length;
+      final categoryTodos = todos.where((todo) => todo.category == category).toList();
+      final completedCount = categoryTodos.where((todo) => todo.isCompleted).length;
       final totalCount = categoryTodos.length;
       final rate = totalCount > 0 ? completedCount / totalCount : 0.0;
 
