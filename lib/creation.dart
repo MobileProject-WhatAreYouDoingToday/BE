@@ -150,144 +150,148 @@ class _CreationPageState extends State<CreationPage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(left: 16.0),
-              child: Text(
-                '할 일 제목을 입력해주세요',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Color(0xFFF95A2C),
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(top: 16.0),
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/images/TextfieldName.png'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: TextField(
-                onChanged: (value) {
-                  setState(() {
-                    taskTitle = value;
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: '할 일 제목',
-                  fillColor: Colors.transparent,
-                  filled: true,
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.only(left: 25.0),
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            GestureDetector(
-              onTap: _navigateToTimeSetting, // 알림 시간 영역 클릭 시 시간 설정
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/timesettingBar.png'),
-                    fit: BoxFit.fitWidth,
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(left: 16.0),
+                  child: Text(
+                    '할 일 제목을 입력해주세요',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Color(0xFFF95A2C),
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(8),
                 ),
-                padding: EdgeInsets.symmetric(vertical: 22, horizontal: 30),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(left: 100.0),
-                      child: Text(
-                        '${selectedTime.format(context)}',
+                Container(
+                  margin: EdgeInsets.only(top: 16.0),
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/TextfieldName.png'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  child: TextField(
+                    onChanged: (value) {
+                      setState(() {
+                        taskTitle = value;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: '할 일 제목',
+                      fillColor: Colors.transparent,
+                      filled: true,
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.only(left: 25.0),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+                GestureDetector(
+                  onTap: _navigateToTimeSetting, // 알림 시간 영역 클릭 시 시간 설정
+                  child: Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/images/timesettingBar.png'),
+                        fit: BoxFit.fitWidth,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 22, horizontal: 30),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(left: 100.0),
+                          child: Text(
+                            '${selectedTime.format(context)}',
+                            style: TextStyle(
+                              fontSize: 35,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              isNotificationOn = !isNotificationOn; // 클릭 시 상태 반전
+                            });
+                          },
+                          child: Image.asset(
+                            isNotificationOn ? 'assets/images/toggleOn.png' : 'assets/images/toggleOff.png',
+                            width: 50,
+                            height: 50,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+                Padding(
+                  padding: EdgeInsets.only(left: 16.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        '카테고리를 선택해주세요',
                         style: TextStyle(
-                          fontSize: 35,
-                          color: Colors.black,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          isNotificationOn = !isNotificationOn; // 클릭 시 상태 반전
-                        });
-                      },
-                      child: Image.asset(
-                        isNotificationOn ? 'assets/images/toggleOn.png' : 'assets/images/toggleOff.png',
-                        width: 50,
-                        height: 50,
-                      ),
-                    ),
-                  ],
+                      SizedBox(height: 20),
+                    ],
+                  ),
                 ),
-              ),
-            ),
-            SizedBox(height: 20),
-            Padding(
-              padding: EdgeInsets.only(left: 16.0),
-              child: Column(
-                children: [
-                  Text(
-                    '카테고리를 선택해주세요',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                Container(
+                  padding: EdgeInsets.only(left: 7.0, right: 7.0),
+                  child: Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: [
+                      _buildCategoryButton(0, '운동', 'assets/images/healthbtn.png', buttonWidth),
+                      _buildCategoryButton(1, '독서', 'assets/images/readingbtn.png', buttonWidth),
+                      _buildCategoryButton(2, '공부', 'assets/images/studybtn.png', buttonWidth),
+                      _buildCategoryButton(3, '취미', 'assets/images/hobbybtn.png', buttonWidth),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/TextArea.png'),
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  SizedBox(height: 20),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.only(left: 7.0, right: 7.0),
-              child: Wrap(
-                spacing: 8.0,
-                runSpacing: 8.0,
-                children: [
-                  _buildCategoryButton(0, '운동', 'assets/images/healthbtn.png', buttonWidth),
-                  _buildCategoryButton(1, '독서', 'assets/images/readingbtn.png', buttonWidth),
-                  _buildCategoryButton(2, '공부', 'assets/images/studybtn.png', buttonWidth),
-                  _buildCategoryButton(3, '취미', 'assets/images/hobbybtn.png', buttonWidth),
-                ],
-              ),
-            ),
-            SizedBox(height: 20),
-            Container(
-              height: 200,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/images/TextArea.png'),
-                  fit: BoxFit.cover,
+                  child: TextField(
+                    maxLines: 4,
+                    onChanged: (value) {
+                      setState(() {
+                        taskMemo = value;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: '할 일을 적어주세요',
+                      border: InputBorder.none,
+                      filled: true,
+                      fillColor: Colors.transparent,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 27.0, vertical: 8.0),
+                    ),
+                  ),
                 ),
-              ),
-              child: TextField(
-                maxLines: 4,
-                onChanged: (value) {
-                  setState(() {
-                    taskMemo = value;
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: '할 일을 적어주세요',
-                  border: InputBorder.none,
-                  filled: true,
-                  fillColor: Colors.transparent,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 27.0, vertical: 8.0),
-                ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        )
+          ),
     );
   }
 
