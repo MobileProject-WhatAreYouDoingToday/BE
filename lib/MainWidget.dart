@@ -184,27 +184,33 @@ class _MainWidgetState extends State<MainWidget> {
                 onTap: () async {
                   if (todoList.isNotEmpty) {
                     setState(() {
-                  // 체크 상태를 변경
+                    // 체크 상태를 변경
                     todoList[todoList.length - 1].isCompleted =
                     !todoList[todoList.length - 1].isCompleted;
-                  });
+                    });
 
-                  // Firestore에 업데이트
-                  await store.setTodo(email, todoList[todoList.length - 1]);
+
+                    // 체크 먼저 업데이트
+                    await store.setTodo(email, todoList[todoList.length - 1]);
+                    // 전체 priority 업데이트
+                    for(var todo in todoList){
+                      todo.priority++;
+                      Store().setTodo(email, todo);
+                    }
 
                   // 우선순위를 변경하려면 Firestore 문서의 `priority` 필드를 직접 업데이트
-                  final ref = FirebaseFirestore.instance
+                    final ref = FirebaseFirestore.instance
                       .collection("users")
                       .doc(email)
                       .collection("todo")
                       .doc(todoList[todoList.length - 1].id); // Todo의 ID로 참조
 
-                  await ref.update({'priority': 0}); // 우선순위를 0으로 설정
+                    await ref.update({'priority': 0}); // 우선순위를 0으로 설정
 
                   // 진행률 업데이트
-                  await getTodoList();
+                    await getTodoList();
                   }
-                  },
+                },
             child: Image.asset(
               todoList[todoList.length - 1].isCompleted
                   ? 'assets/images/checkbox.png' // 체크된 상태 이미지
