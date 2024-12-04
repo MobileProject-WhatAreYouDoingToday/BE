@@ -5,39 +5,105 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'store.dart'; // Todo 클래스를 포함한 task.dart
 import 'notification_service.dart';
 
+
 class CreationPage extends StatefulWidget {
   final String email;
+  final Todo? todo;
 
-  const CreationPage({super.key, required this.email});
+  const CreationPage({super.key, required this.email, required this.todo});
 
   @override
-  _CreationPageState createState() => _CreationPageState(email);
+  _CreationPageState createState() => _CreationPageState(email, todo);
 }
 
 class _CreationPageState extends State<CreationPage> {
   final String email;
+  final Todo? todo;
+
   String taskTitle = '';
   String taskMemo = '';
   bool isNotificationOn = false;
-  TimeOfDay selectedTime = TimeOfDay.now();
+  DateTime selectedTime = DateTime.now();
   String? selectedCategory; // nullable 변수
   int? reminderTime;
+  TextEditingController nameController = TextEditingController();
+  TextEditingController memoController = TextEditingController();
 
 
-  _CreationPageState(this.email); // 알림 시간 변수 추가
+  _CreationPageState(this.email, this.todo); // 알림 시간 변수 추가
+
+  @override
+  void initState(){
+    super.initState();
+    if(todo!=null){
+      taskTitle = todo!.name;
+      nameController.text = todo!.name;
+      taskMemo = todo!.description;
+      memoController.text = todo!.description;
+      isNotificationOn = todo!.isNotification;
+      selectedCategory = todo!.category;
+      selectedTime = todo!.date.toDate();
+    }
+  }
 
   Future<void> _saveTask() async {
-    if (taskTitle.isNotEmpty) {
-      // Todo 객체 생성
-      Todo newTodo = Todo(
-        name: taskTitle,
-        categori: selectedCategory != "기타" ? selectedCategory.toString() : "기타", // 카테고리 설정
-        date: Timestamp.now(), // 현재 시간으로 설정
-        isNotification: isNotificationOn, // 알림 여부 설정
-        priority: 0, // 기본 우선순위
-        is_completed: false, // 기본 완료 상태
-        description: taskMemo,
-      );
+    if(todo == null){
+      if (taskTitle.isNotEmpty) {
+        // Todo 객체 생성
+        Todo newTodo = Todo(
+          name: taskTitle,
+          category: selectedCategory != "기타" ? selectedCategory.toString() : "기타", // 카테고리 설정
+          date: Timestamp.now(), // 현재 시간으로 설정
+          isNotification: isNotificationOn, // 알림 여부 설정
+          priority: 0, // 기본 우선순위
+          isCompleted: false, // 기본 완료 상태
+          description: taskMemo,
+        );
+        if (isNotificationOn) {
+          // 현재 시간과 선택된 시간의 차이를 계산
+          final now = TimeOfDay.now();
+          final notificationTime = selectedTime.hour * 60 + selectedTime.minute;
+          final currentTime = now.hour * 60 + now.minute;
+
+          final difference = notificationTime - currentTime;
+          if (difference > 0) {
+            // 알림 예약 (예: difference 분 후에 알림 울리게 설정)
+            Future.delayed(Duration(minutes: difference), () {
+              NotificationService.showNotification('할 일 알림', '할 일이 있습니다: $taskTitle');
+            });
+          } else {
+            // 선택된 시간이 이미 지났다면 즉시 알림
+            NotificationService.showNotification('할 일 알림', '할 일이 있습니다: $taskTitle');
+          }
+        }
+        print(newTodo.date);
+        List<Todo>? todoList = await Store().getSelectedDateTodoList(email, newTodo.date);
+        int lastP=0;
+
+        for(int i=0;i<todoList!.length;i++){
+          if(todoList[i].priority==lastP){
+            lastP = todoList[i].priority + 1;
+            print('라스트p는 {$lastP}');
+          }
+        }
+        newTodo.priority = lastP;
+
+        // Todo 객체를 반환
+        Navigator.pop(context, {'todo': newTodo, 'selectedTime': selectedTime});
+        Store().setTodo(email, newTodo);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('할 일 제목을 입력해주세요.')),
+        );
+      }
+    } else {
+      todo!.date = Timestamp.fromDate(selectedTime);
+      todo!.category = selectedCategory!;
+      todo!.isNotification = isNotificationOn;
+      todo!.name = taskTitle;
+      todo!.description = taskMemo;
+
+      await Store().setTodo(email, todo!);
       if (isNotificationOn) {
         // 현재 시간과 선택된 시간의 차이를 계산
         final now = TimeOfDay.now();
@@ -55,26 +121,9 @@ class _CreationPageState extends State<CreationPage> {
           NotificationService.showNotification('할 일 알림', '할 일이 있습니다: $taskTitle');
         }
       }
-      print(newTodo.date);
-      List<Todo>? todoList = await Store().getSelectedDateTodoList(email, newTodo.date);
-      int lastP=0;
-
-      for(int i=0;i<todoList!.length;i++){
-        if(todoList[i].priority==lastP){
-          lastP = todoList[i].priority + 1;
-          print('라스트p는 {$lastP}');
-        }
-      }
-      newTodo.priority = lastP;
-
-      // Todo 객체를 반환
-      Navigator.pop(context, {'todo': newTodo, 'selectedTime': selectedTime});
-      Store().setTodo(email, newTodo);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('할 일 제목을 입력해주세요.')),
-      );
+      _goBack();
     }
+
   }
 
   void _goBack() {
@@ -92,7 +141,7 @@ class _CreationPageState extends State<CreationPage> {
     // 반환된 데이터 처리
     if (result != null) {
       final newTodo = result['todo'] as Todo; // Todo 객체
-      final TimeOfDay selectedTime = result['selectedTime']; // 선택된 시간
+      final DateTime selectedTime = result['selectedTime']; // 선택된 시간
       //final int? reminderTime = result['reminderTime'];
 
       setState(() {
@@ -177,6 +226,7 @@ class _CreationPageState extends State<CreationPage> {
                     ),
                   ),
                   child: TextField(
+                    controller: nameController,
                     onChanged: (value) {
                       setState(() {
                         taskTitle = value;
@@ -209,7 +259,7 @@ class _CreationPageState extends State<CreationPage> {
                         Padding(
                           padding: EdgeInsets.only(left: 100.0),
                           child: Text(
-                            '${selectedTime.format(context)}',
+                            '${selectedTime.hour} : ${selectedTime.minute}',
                             style: TextStyle(
                               fontSize: 35,
                               color: Colors.black,
@@ -273,6 +323,7 @@ class _CreationPageState extends State<CreationPage> {
                     ),
                   ),
                   child: TextField(
+                    controller: memoController,
                     maxLines: 4,
                     onChanged: (value) {
                       setState(() {

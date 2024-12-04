@@ -316,7 +316,7 @@ class ChangePwWidget extends StatelessWidget { // 로그인 화면
                   onPressed: () {
                     // auth.sendPwChangeEmail(newPwController.text);
                     auth.changePw(newPwController.text, checkNewPwController.text); // Auth 상에서의 비밀번호 변경 메소드
-                    Store().setUser(auth.userCredential?.user!.email, user.uid, user.name, newPwController.text); // firestore 상에서의 비밀번호 변경 메소드
+                    Store().setUser(auth.userCredential!.user!.email!, user.uid, user.name, newPwController.text); // firestore 상에서의 비밀번호 변경 메소드
                     auth.userCredential == null;
                     Navigator.push(context, MaterialPageRoute(builder: (context) => LoginWidget()));
                     print('버튼이 클릭되었습니다!');

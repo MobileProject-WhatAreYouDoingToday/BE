@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'store.dart'; // Todo 클래스를 포함한 Store 관련 파일
+import 'store.dart'; // Todo 클래스를 포함한 task.dart
 import 'creation.dart';
 
 class TimeSetting extends StatefulWidget {
@@ -10,148 +10,164 @@ class TimeSetting extends StatefulWidget {
 }
 
 class _TimeSettingState extends State<TimeSetting> {
-  DateTime selectedTime = DateTime.now(); // 선택한 시간
-  int? reminderTime; // 알림 시간 (분 단위)
+  DateTime selectedTime = DateTime.now();
+  int? reminderTime;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // 배경색을 완전히 흰색으로 설정
-      appBar:AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text('시간설정'),
-      ),
-      body: Container(
-        color: Colors.white,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildTimePicker(),
-              const SizedBox(height: 40),
-              _buildSaveButton(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // AppBar 구성
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
       backgroundColor: Colors.white,
-      elevation: 0,
-      title: Center(
-        child: Text(
-          '시간 설정',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 25,
-            color: Colors.black,
+      appBar: AppBar(
+        scrolledUnderElevation: 0,
+        backgroundColor: Colors.white,
+        title: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.only(right: 55.0), // 왼쪽 패딩 추가
+          child: Text(
+            '시간 설정',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 25,
+            ),
           ),
         ),
-      ),
-      leading: IconButton(
-        padding: EdgeInsets.only(left: 9.0),
-        icon: Image.asset(
-          'assets/images/leftIcon.png',
-          width: 70,
-          height: 70,
-        ),
-        onPressed: () {
-          Navigator.pop(context); // 이전 화면으로 돌아가기
-        },
-      ),
-    );
-  }
-
-  // 시간 선택기 구성
-  Widget _buildTimePicker() {
-    return Container(
-      height: 400,
-      width: 200,
-      child: FittedBox(
-        child: TimePickerSpinner(
-          time: selectedTime,
-          is24HourMode: true,
-          onTimeChange: (time) {
-            setState(() {
-              selectedTime = time; // 선택한 시간 업데이트
-            });
+        leading: IconButton(
+          padding: EdgeInsets.only(left: 9.0), // 왼쪽 패딩 추가
+          icon: Image.asset(
+            'assets/images/leftIcon.png', // PNG 파일 경로
+            width: 70, // 원하는 너비
+            height: 70, // 원하는 높이
+          ),
+          onPressed: () {
+            Navigator.pop(context); // 이전 화면으로 돌아가기
           },
-          normalTextStyle: TextStyle(
-            fontSize: 30,
-            color: Colors.grey,
-          ),
-          highlightedTextStyle: TextStyle(
-            fontSize: 30,
-            color: Colors.black,
-          ),
+        ),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 시간 선택기
+            Container(
+              height: 400, // 원하는 높이 설정
+              width: 200, // 원하는 너비 설정
+              child: FittedBox(
+                child: TimePickerSpinner(
+                  time: selectedTime,
+                  is24HourMode: true,
+                  onTimeChange: (time) {
+                    setState(() {
+                      selectedTime = time; // 선택한 시간 저장
+                    });
+                  },
+                  normalTextStyle: TextStyle(
+                    fontSize: 30, // 일반 텍스트 크기
+                    color: Colors.grey,
+                  ),
+                  highlightedTextStyle: TextStyle(
+                    fontSize: 30, // 강조된 텍스트 크기
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 40),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '시작 전',
+                      style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold, // 텍스트를 굵게 설정
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(width: 10), // Text와 버튼 사이의 간격
+                _buildReminderButton(
+                    5,
+                    'assets/images/5minute.png',
+                    'assets/images/5min.png' // 선택된 이미지 경로
+                ), // 5분 버튼
+                SizedBox(width: 10),
+                _buildReminderButton(
+                    10,
+                    'assets/images/10minute.png',
+                    'assets/images/10min.png' // 선택된 이미지 경로
+                ), // 10분 버튼
+                SizedBox(width: 10),
+                _buildReminderButton(
+                    30,
+                    'assets/images/30minute.png',
+                    'assets/images/30min.png' // 선택된 이미지 경로
+                ), // 30분 버튼
+              ],
+            ),
+            SizedBox(height: 50),
+            // 저장 버튼
+            GestureDetector(
+              onTap: () {
+                _saveTodo(); // Todo 객체 저장 함수 호출
+              },
+              child: Container(
+                width: 400,
+                height: 70,
+                child: Image.asset("assets/images/savebtn.png"), // 저장 버튼 이미지 경로
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // 저장 버튼 구성
-  Widget _buildSaveButton() {
-    return GestureDetector(
-      onTap: _saveTodo,
-      child: Container(
-        width: 400,
-        height: 70,
-        child: Image.asset("assets/images/savebtn.png"), // 저장 버튼 이미지
-      ),
-    );
-  }
-
-  // 알림 버튼 구성
   Widget _buildReminderButton(int minutes, String imagePath, String selectedImagePath) {
     return InkWell(
-      onTap: () => _setReminder(minutes), // 알림 시간 설정
+      onTap: () => setReminder(minutes, selectedImagePath), // 클릭 시 알림 시간 설정
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Image.asset(
             reminderTime == minutes ? selectedImagePath : imagePath, // 선택된 이미지 사용
-            width: 70.0,
-            height: 50.0,
+            width: 70.0, // 원하는 너비
+            height: 50.0, // 원하는 높이 (조정 가능)
           ),
-          const SizedBox(height: 5),
+          SizedBox(height: 5), // 아이콘과 텍스트 사이의 간격
         ],
       ),
     );
   }
 
-  // 알림 시간 설정
-  void _setReminder(int minutes) {
+  void setReminder(int minutes, String imagePath) {
     setState(() {
-      reminderTime = minutes;
+      reminderTime = minutes; // 알림 시간 설정
     });
   }
 
-  // Todo 저장 로직
   void _saveTodo() {
-    // Todo 객체 생성
+    // Todo 객체 생성 및 저장 로직
     Todo newTodo = Todo(
-      name: '새로운 할 일',
-      categori: '기타',
-      date: Timestamp.now(),
-      isNotification: true,
-      priority: 0,
-      is_completed: false,
-      description: '선택한 시간: ${selectedTime.hour}:${selectedTime.minute}, 알림 시간: ${reminderTime ?? 0} 분',
+      name: '새로운 할 일', // 또는 입력된 제목으로 변경
+      category: '기타', // 카테고리 설정
+      date: Timestamp.now(), // 현재 날짜로 설정
+      isNotification: true, // 알림 여부 설정
+      priority: 0, // 기본 우선순위
+      isCompleted: false, // 기본 완료 상태
+      description: '선택한 시간: ${selectedTime.hour}:${selectedTime.minute}, 알림 시간: ${reminderTime ?? 0} 분', // 선택한 시간으로 설명 설정
+      //task: null, // 필요한 경우 Task 객체 설정
     );
 
     // Firestore에 저장
     FirebaseFirestore.instance.collection('todos').add(newTodo.toFirestore()).then((_) {
-      // 이전 화면으로 반환
+      // CreationPage로 돌아가며 Todo 객체와 selectedTime, reminderTime 반환
       Navigator.pop(context, {
         'todo': newTodo,
         'selectedTime': TimeOfDay.fromDateTime(selectedTime),
-        'reminderTime': reminderTime,
+        'reminderTime': reminderTime // reminderTime도 반환
       });
     }).catchError((error) {
       print('저장 실패: $error');
