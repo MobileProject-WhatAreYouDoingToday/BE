@@ -72,7 +72,7 @@ class _CalendarPageState extends State<CalendarPage> {
     setState(() {
       _events = {};
       for (var todo in todoList) {
-        if (todo.is_completed && todo.categori !="null") { // is_completed가 true이고 categori가 null이 아닌 경우만 처리
+        if (todo.is_completed && todo.categori != "null") { // is_completed가 true이고 categori가 null이 아닌 경우만 처리
           final todoDate = todo.date.toDate();
           final eventDate = DateTime(todoDate.year, todoDate.month, todoDate.day);
 
@@ -87,7 +87,7 @@ class _CalendarPageState extends State<CalendarPage> {
             case "운동":
               eventColor = const Color(0xFFFFD465);
               break;
-            case "공부":
+            case "null":
               eventColor = const Color(0xFF61E4C5);
               break;
             default:

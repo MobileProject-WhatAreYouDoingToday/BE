@@ -67,10 +67,9 @@ class Auth { // 계정 정보를 담는 클래스
   }
 }
 
-class LoginWidget extends StatelessWidget {
+class LoginWidget extends StatelessWidget { // 로그인 화면
   final TextEditingController emailController = TextEditingController();
   final TextEditingController pwController = TextEditingController();
-  final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null); // 에러 메시지 상태 관리
 
   @override
   Widget build(BuildContext context) {
@@ -106,24 +105,7 @@ class LoginWidget extends StatelessWidget {
                   '로그인',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 30),
-                // 에러 메시지를 표시하는 공간 (아이디 입력창 위로 이동)
-                ValueListenableBuilder<String?>(
-                  valueListenable: errorMessage,
-                  builder: (context, value, child) {
-                    return SizedBox(
-                      height: 30, // 항상 일정한 공간 차지
-                      child: Center(
-                        child: value != null
-                            ? Text(
-                          value,
-                          style: TextStyle(color: Colors.red, fontSize: 16),
-                        )
-                            : SizedBox.shrink(), // 메시지가 없으면 빈 공간
-                      ),
-                    );
-                  },
-                ),
+                SizedBox(height: 40),
                 AuthTextField(
                   controller: emailController,
                   obscureText: false,
@@ -137,29 +119,30 @@ class LoginWidget extends StatelessWidget {
                   labelText: 'PW',
                   imagePath: 'assets/images/lock.png',
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 30),
                 ElevatedButton(
                   onPressed: () async {
                     if (emailController.text.isEmpty || pwController.text.isEmpty) {
-                      // 입력값이 비어있는 경우 에러 메시지 설정
-                      errorMessage.value = "모든 정보를 입력해야 합니다.";
-                    } else {
-                      // 로그인 시도
-                      bool loginSuccess = await authe.logIn(
-                        emailController.text,
-                        pwController.text,
+                      // 입력값이 비어있는 경우 알림 표시
+                      showDialog(
+                        context: context,
+                        builder: (context) =>
+                            AlertDialog(
+                              title: Text('입력 오류'),
+                              content: Text('모든 정보를 입력해야 합니다.',
+                                  style: TextStyle(fontSize: 18)),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text('확인'),
+                                ),
+                              ],
+                            ),
                       );
-
-                      if (loginSuccess) {
-                        // 로그인 성공: 메인 화면으로 이동
-                        errorMessage.value = null; // 에러 메시지 초기화
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => MainWidget(auth: authe)),
-                        );
-                      } else {
-                        // 로그인 실패: 에러 메시지 표시
-                        errorMessage.value = "정보를 다시 입력해주세요";
+                    }
+                    else{
+                      if(await authe.logIn(emailController.text, pwController.text) == true){ //로그인 메소드
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => MainWidget(auth: authe)));
                       }
                     }
                   },
@@ -185,11 +168,41 @@ class LoginWidget extends StatelessWidget {
                       ),
                       GestureDetector(
                         onTap: () {
-                          // 회원가입 창으로 이동
+                          // 회원가입 창으로 이동해야 함
                           Navigator.push(context, MaterialPageRoute(builder: (context) => SignWidget()));
                         },
                         child: Text(
                           ' 회원가입',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepOrangeAccent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 5),
+                Container(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'ID / PW 잊으셨나요?',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          // ID/PW 찾기 창으로 이동해야 함
+                          authe.userCredential==null;
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => WillChangePwWidget()));
+                        },
+                        child: Text(
+                          ' ID / PW 찾기',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -208,7 +221,6 @@ class LoginWidget extends StatelessWidget {
     );
   }
 }
-
 
 class ChangePwWidget extends StatelessWidget { // 로그인 화면
   final TextEditingController newPwController = TextEditingController();
@@ -521,7 +533,6 @@ class SignWidget extends StatelessWidget { // 회원가입 화면
     );
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
