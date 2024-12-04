@@ -80,6 +80,7 @@ class LoginWidget extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.only(left: 30.0, top: 40.0),
           child: AppBar(
+            scrolledUnderElevation: 0,
             backgroundColor: Colors.white,
             leading: IconButton(
               onPressed: () {
@@ -256,8 +257,8 @@ class ChangePwWidget extends StatelessWidget { // 로그인 화면
         child: Padding(
           padding: EdgeInsets.only(left: 30.0, top: 40.0),
           child: AppBar(
-            backgroundColor: Colors.white,
             scrolledUnderElevation: 0,
+            backgroundColor: Colors.white,
             leading: IconButton(
               onPressed: () {
                 Navigator.pop(context);
