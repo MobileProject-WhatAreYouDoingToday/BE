@@ -5,6 +5,7 @@ import 'auth.dart';
 import 'creation.dart';
 import 'store.dart'; // Todo 클래스를 포함한 task.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'calendar.dart';
 
 class TodoListPage extends StatefulWidget {
   final Auth auth;
@@ -179,9 +180,18 @@ class _TodoListPageState extends State<TodoListPage> {
                   ),
                 ),
                 SizedBox(width: 50),
-                Text(
-                  DateFormat('yyyy.MM.dd').format(selectday),
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                GestureDetector(
+                  onTap: () {
+                    // calendar.dart 페이지로 이동
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CalendarPage(auth: auth)), // CalendarPage는 calendar.dart에 정의된 페이지입니다.
+                    );
+                  },
+                  child: Text(
+                    DateFormat('yyyy.MM.dd').format(selectday),
+                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 SizedBox(width: 50),
                 GestureDetector(
@@ -306,7 +316,7 @@ class _TodoListPageState extends State<TodoListPage> {
                 GestureDetector(
                   onTap: _navigateToProcessPage,
                   child: Image.asset(
-                    'assets/images/chart.png',
+                    'assets/images/chartBig.png',
                     width: 80,
                     height: 80,
                   ),
