@@ -90,6 +90,8 @@ class _CalendarPageState extends State<CalendarPage> {
             case "공부":
               eventColor = const Color(0xFF61E4C5);
               break;
+            case: "null":
+
             default:
               eventColor = Colors.grey;
           }
