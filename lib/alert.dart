@@ -1,35 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
-class NetworkMonitor extends StatefulWidget {
-  final Widget child;
+class AlertHelper {
+  static final Connectivity _connectivity = Connectivity();
+  static bool _isDialogVisible = false;
 
-  const NetworkMonitor({required this.child});
+  // 알림 권한 요청 및 확인
+  static Future<bool> requestNotificationPermission(BuildContext context) async {
+    final status = await Permission.notification.status;
 
-  @override
-  _NetworkMonitorState createState() => _NetworkMonitorState();
-}
+    if (status.isGranted) {
+      return true; // 권한 허용됨
+    }
 
-class _NetworkMonitorState extends State<NetworkMonitor> {
-  final Connectivity _connectivity = Connectivity();
-  bool _isDialogVisible = false;
+    if (status.isDenied || status.isPermanentlyDenied) {
+      // 권한 요청
+      final newStatus = await Permission.notification.request();
 
-  @override
-  void initState() {
-    super.initState();
-    _requestNotificationPermissions(); // 알림 권한 요청
-    _listenToConnectivityChanges(); // 네트워크 상태 감지
+      if (newStatus.isGranted) {
+        return true; // 새로 요청 후 권한 허용됨
+      }
+
+      if (newStatus.isPermanentlyDenied && context.mounted) {
+        // 설정으로 이동 유도
+        _showPermissionDialog(context);
+      }
+    }
+    return false; // 권한 허용되지 않음
   }
 
   // 네트워크 상태 감지
-  void _listenToConnectivityChanges() {
+  static void listenToConnectivityChanges(BuildContext context) {
     _connectivity.onConnectivityChanged.listen((dynamic result) {
       if (result is ConnectivityResult) {
-        _handleConnectivityResult(result);
+        _handleConnectivityResult(result, context);
       } else if (result is List<ConnectivityResult>) {
         for (var connectivityResult in result) {
-          _handleConnectivityResult(connectivityResult);
+          _handleConnectivityResult(connectivityResult, context);
         }
       } else {
         debugPrint("알 수 없는 네트워크 상태: $result");
@@ -38,131 +46,18 @@ class _NetworkMonitorState extends State<NetworkMonitor> {
   }
 
   // 네트워크 상태 처리
-  void _handleConnectivityResult(ConnectivityResult result) {
+  static void _handleConnectivityResult(
+      ConnectivityResult result, BuildContext context) {
     debugPrint("네트워크 상태 변경: $result");
     if (result == ConnectivityResult.none) {
-      _showNetworkErrorDialog();
+      _showNetworkErrorDialog(context);
     } else {
-      _hideNetworkErrorDialog();
-    }
-  }
-
-  // 알림 권한 요청
-  void _requestNotificationPermissions() async {
-    final status = await Permission.notification.request(); //기본 다이얼로그
-    if (status.isDenied && context.mounted) {
-      _showPermissionDialog();
-    }
-    else if(status.isPermanentlyDenied && context.mounted) {
-      _showPermissionDialog();
-    }
-  }
-
-  // 알림 권한 다이얼로그
-  void _showPermissionDialog() {
-    if (!_isDialogVisible) {
-      _isDialogVisible = true;
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          backgroundColor: const Color(0xFFFDF7F7), // 배경 색상
-          contentPadding: EdgeInsets.all(20),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '알림 권한을 허용해주세요',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                child: Image.asset("assets/images/warning.png"),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                '알림을 받기 위해서는 권한을 허용해주셔야 됩니다.\n설정에서 이를 구성할 수 있습니다.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 15),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 100,
-                    height: 35,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        _isDialogVisible = false;
-                        openAppSettings(); // 설정 화면 열기
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding: EdgeInsets.symmetric(vertical: 5), // 세로 패딩만 설정
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                      child: const Text(
-                        '설정',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10), // 버튼 간의 간격
-                  SizedBox(
-                    width: 100,
-                    height: 35,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        _isDialogVisible = false;
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding: EdgeInsets.symmetric(vertical: 5), // 세로 패딩만 설정
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                      child: const Text(
-                        '닫기',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
+      _hideNetworkErrorDialog(context);
     }
   }
 
   // 네트워크 오류 다이얼로그
-  void _showNetworkErrorDialog() {
+  static void _showNetworkErrorDialog(BuildContext context) {
     if (!_isDialogVisible) {
       _isDialogVisible = true;
       showDialog(
@@ -232,16 +127,114 @@ class _NetworkMonitorState extends State<NetworkMonitor> {
     }
   }
 
-
-  void _hideNetworkErrorDialog() {
+  // 네트워크 오류 다이얼로그 숨기기
+  static void _hideNetworkErrorDialog(BuildContext context) {
     if (_isDialogVisible) {
       Navigator.of(context).pop();
       _isDialogVisible = false;
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return widget.child;
+  // 알림 권한 설정 다이얼로그
+  static void _showPermissionDialog(BuildContext context) {
+    if (!_isDialogVisible) {
+      _isDialogVisible = true;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: const Color(0xFFFDF7F7), // 배경 색상
+          contentPadding: EdgeInsets.all(20),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '알림 권한을 허용해주세요',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                child: Image.asset("assets/images/warning.png"),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                '알림을 받기 위해 권한을 허용해주세요.\n설정에서 이를 구성할 수 있습니다.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 15),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 100,
+                    height: 35,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        _isDialogVisible = false;
+                        openAppSettings(); // 설정 화면 열기
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: EdgeInsets.symmetric(vertical: 5), // 세로 패딩만 설정
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: const Text(
+                        '설정',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10), // 버튼 간의 간격
+                  SizedBox(
+                    width: 100,
+                    height: 35,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        _isDialogVisible = false;
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: EdgeInsets.symmetric(vertical: 5), // 세로 패딩만 설정
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: const Text(
+                        '닫기',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 }

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'auth.dart';
 import 'timesetting.dart'; // 시간 설정 화면을 위한 파일 임포트
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'store.dart'; // Todo 클래스를 포함한 task.dart
 import 'notification_service.dart';
-
+import 'alert.dart';
 
 class CreationPage extends StatefulWidget {
   final String email;
@@ -18,7 +17,7 @@ class CreationPage extends StatefulWidget {
   _CreationPageState createState() => _CreationPageState(email, todo, selectDay);
 }
 
-class _CreationPageState extends State<CreationPage> {
+class _CreationPageState extends State<CreationPage> { // 할 일 생성 및 수정 위젯
   final String email;
   Todo? todo;
   DateTime selectDay;
@@ -27,13 +26,13 @@ class _CreationPageState extends State<CreationPage> {
   String taskMemo = '';
   bool isNotificationOn = false;
   DateTime selectedTime = DateTime.now();
-  String? selectedCategory; // nullable 변수
+  String? selectedCategory;
   int? reminderTime;
   TextEditingController nameController = TextEditingController();
   TextEditingController memoController = TextEditingController();
 
 
-  _CreationPageState(this.email, this.todo, this.selectDay); // 알림 시간 변수 추가
+  _CreationPageState(this.email, this.todo, this.selectDay); // list에서 날짜 정보를 가져와야 함
 
   @override
   @override
@@ -47,7 +46,7 @@ class _CreationPageState extends State<CreationPage> {
       isNotificationOn = todo!.isNotification;
       selectedCategory = todo!.category;
 
-      // todo의 date가 null인 경우 대비
+      // todo의 date가 null인 경우 그냥 현재 시간으로 하는거임
       try {
         print("선택 날짜 : ${selectDay}");
         selectedTime = todo!.date.toDate();
@@ -110,7 +109,7 @@ class _CreationPageState extends State<CreationPage> {
       _goBack();
     }
 
-  }
+}
 
   void _goBack() {
     Navigator.pop(context);
@@ -118,6 +117,11 @@ class _CreationPageState extends State<CreationPage> {
 
   // 알림 시간 설정 페이지로 이동
   void _navigateToTimeSetting() async {
+    // 알림 권한 확인
+    bool hasPermission = await AlertHelper.requestNotificationPermission(context);
+    if (!hasPermission) {
+      return; // 권한 없으면 이동하지 않음
+    }
     // TimeSetting 페이지로 이동
     selectedTime = await Navigator.push(
       context,
@@ -243,7 +247,12 @@ class _CreationPageState extends State<CreationPage> {
                             ),
                         ),
                         GestureDetector(
-                          onTap: () {
+                          onTap: () async {
+                            if (!isNotificationOn) {
+                              // **알림 권한 확인 추가**
+                              bool hasPermission = await AlertHelper.requestNotificationPermission(context);
+                              if (!hasPermission) return; // 권한 없으면 토글 상태 변경 차단
+                            }
                             setState(() {
                               isNotificationOn = !isNotificationOn; // 클릭 시 상태 반전
                             });
