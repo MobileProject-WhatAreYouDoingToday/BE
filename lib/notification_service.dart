@@ -1,13 +1,9 @@
 import 'package:crypto/crypto.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:whatareyoudoingtoday/store.dart';
-import 'dart:convert'; // for the utf8.encode method
+import 'package:TodayTodo/store.dart';
+import 'dart:convert'; // todo id 정수로 치환하기 위해
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:cloud_firestore/cloud_firestore.dart'; // 파이어베이스 패키지
-import 'package:flutter/material.dart';
-import 'dart:io';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._();
@@ -30,9 +26,10 @@ class NotificationService {
   }
 
   static Future<void> showNotification(Todo todo) async {
-    var bytes = utf8.encode(todo.id!); // 문자열을 바이트로 변환
-    var digest = sha1.convert(bytes); // SHA1 해시 생성
-    int uid = int.parse(digest.toString().substring(0, 8), radix: 16) % 2147483647; // 32비트 정수 범위 내로 조정
+    // todo id int로 바꿔버리기
+    var bytes = utf8.encode(todo.id!);
+    var digest = sha1.convert(bytes);
+    int uid = int.parse(digest.toString().substring(0, 8), radix: 16) % 2147483647;
 
     if (todo.isNotification == true) {
       tz.initializeTimeZones();
@@ -47,7 +44,7 @@ class NotificationService {
         importance: Importance.max,
       );
 
-      try {
+      try { // 이미 설정된 알람일 경우 삭제하고 다시 추가하도록
         await _instance._notificationPlugin.cancel(uid);
         print("삭제성공");
       } catch (e) {
@@ -58,7 +55,7 @@ class NotificationService {
         "${todo.name} 할 시간입니다.",
         date,
         NotificationDetails(android: androidDetails),
-        androidScheduleMode: AndroidScheduleMode.exact,
+        androidScheduleMode: AndroidScheduleMode.exact, // 즉시 알람 가려면 inexact 쓰면 안 됨
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       );
       print("푸시 알림 생성");
