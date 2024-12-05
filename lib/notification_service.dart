@@ -41,8 +41,8 @@ class NotificationService {
       tz.TZDateTime date = tz.TZDateTime.from(totime, tz.local);
 
       var androidDetails = AndroidNotificationDetails(
-        'your_channel_id', // 채널 ID 수정
-        '리마인더', // 채널 이름
+        'your_channel_id',
+        '리마인더',
         priority: Priority.high,
         importance: Importance.max,
       );
@@ -54,8 +54,8 @@ class NotificationService {
       }
       await _instance._notificationPlugin.zonedSchedule(
         uid,
-        "리마인더",
-        todo.name,
+        "오늘 뭐해?",
+        "${todo.name} 할 시간입니다.",
         date,
         NotificationDetails(android: androidDetails),
         androidScheduleMode: AndroidScheduleMode.exact,
