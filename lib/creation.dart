@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'auth.dart';
 import 'timesetting.dart'; // 시간 설정 화면을 위한 파일 임포트
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'store.dart'; // Todo 클래스를 포함한 task.dart
@@ -18,7 +17,7 @@ class CreationPage extends StatefulWidget {
   _CreationPageState createState() => _CreationPageState(email, todo, selectDay);
 }
 
-class _CreationPageState extends State<CreationPage> {
+class _CreationPageState extends State<CreationPage> { // 할 일 생성 및 수정 위젯
   final String email;
   Todo? todo;
   DateTime selectDay;
@@ -27,13 +26,13 @@ class _CreationPageState extends State<CreationPage> {
   String taskMemo = '';
   bool isNotificationOn = false;
   DateTime selectedTime = DateTime.now();
-  String? selectedCategory; // nullable 변수
+  String? selectedCategory;
   int? reminderTime;
   TextEditingController nameController = TextEditingController();
   TextEditingController memoController = TextEditingController();
 
 
-  _CreationPageState(this.email, this.todo, this.selectDay); // 알림 시간 변수 추가
+  _CreationPageState(this.email, this.todo, this.selectDay); // list에서 날짜 정보를 가져와야 함
 
   @override
   @override
@@ -47,7 +46,7 @@ class _CreationPageState extends State<CreationPage> {
       isNotificationOn = todo!.isNotification;
       selectedCategory = todo!.category;
 
-      // todo의 date가 null인 경우 대비
+      // todo의 date가 null인 경우 그냥 현재 시간으로 하는거임
       try {
         print("선택 날짜 : ${selectDay}");
         selectedTime = todo!.date.toDate();

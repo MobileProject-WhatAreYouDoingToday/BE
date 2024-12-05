@@ -1,7 +1,4 @@
-import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'MainWidget.dart';
@@ -9,7 +6,7 @@ import 'store.dart';
 
 final Auth authe = Auth();
 
-class Auth { // 계정 정보를 담는 클래스
+class Auth { // 계정 관련 작업을 정의하는 클래스
   final FirebaseAuth auth = FirebaseAuth.instance;
   final Store store = Store();
   UserCredential? userCredential;
@@ -31,7 +28,7 @@ class Auth { // 계정 정보를 담는 클래스
     return b;
   }
 
-  Future<void> signIn(String email, String name, String pw) async { // 회원가입을 하고 파이어스토어 문서를 생성함
+  Future<void> signIn(String email, String name, String pw) async { // 회원가입을 하고 파이어스토어의 users 컬렉션에 user정보 문서를 생성함
     try {
       userCredential = await auth.createUserWithEmailAndPassword(
         email: email,
@@ -46,16 +43,7 @@ class Auth { // 계정 정보를 담는 클래스
     }
   }
 
-  Future<void> sendPwChangeEmail(String email) async {
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      print('비밀번호 재설정 이메일이 전송되었습니다.');
-    } catch  (e){
-      print('비밀번호 재설정 이메일이 전송되었습니다.');
-    }
-  }
-
-  Future<void> changePw(String newPw, String checkNewPw) async {
+  Future<void> changePw(String newPw, String checkNewPw) async { // 패스워드 재설정
     try {
       if(newPw == checkNewPw){
         await auth.currentUser?.updatePassword(newPw);
@@ -240,7 +228,7 @@ class LoginWidget extends StatelessWidget {
   }
 }
 
-class ChangePwWidget extends StatelessWidget { // 로그인 화면
+class ChangePwWidget extends StatelessWidget { // 비밀번호 재설정 위젯
   final TextEditingController newPwController = TextEditingController();
   final TextEditingController checkNewPwController = TextEditingController();
   final Auth auth;
@@ -440,11 +428,9 @@ class WillChangePwWidget extends StatelessWidget { // 로그인 화면
                 ElevatedButton(
                   onPressed: () async {
                     try {
-                      // 유저 크레덴셜 초기화
                       authe.userCredential = null;
 
-                      // 유저 크레덴셜이 null일 때만 처리
-                      if (authe.userCredential == null) {
+                      if (authe.userCredential == null) { // 이름과 email에 따라서 패스워드 재설정 창으로 이동
                         UserData? c_user = await authe.store.getUser(emailController.text);
 
                         if (c_user != null&&c_user.name == nameController.text) {
