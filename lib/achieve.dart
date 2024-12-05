@@ -9,6 +9,12 @@ class AchievePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentMonth = DateTime.now().month;
+    final monthNames = [
+      '1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'
+    ];
+    final currentMonthName = monthNames[currentMonth - 1];
+
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: fetchCategoryAchievements(userEmail),
       builder: (context, snapshot) {
@@ -27,9 +33,9 @@ class AchievePage extends StatelessWidget {
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
-              title: const Text(
-                '달성률',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+              title: Text(
+                '$currentMonthName 달성률',
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
               ),
               centerTitle: true,
             ),
@@ -102,10 +108,6 @@ class AchievePage extends StatelessWidget {
                               Container(
                                 width: 48,
                                 height: 48,
-                                // decoration: BoxDecoration(
-                                //   color: achievement['color'], // 배경색
-                                //   shape: BoxShape.circle,
-                                // ),
                                 child: ClipOval(
                                   child: Image.asset(
                                     achievement['imagePath'] as String,
@@ -160,6 +162,11 @@ class AchievePage extends StatelessWidget {
     final store = Store();
     final todos = await store.getTodoList(email) ?? [];
 
+    // Get the current month and year
+    final now = DateTime.now();
+    final currentMonth = now.month;
+    final currentYear = now.year;
+
     const categories = ['독서', '운동', '공부', '취미'];
     const colors = [
       Color(0xFFFF9692),
@@ -174,11 +181,17 @@ class AchievePage extends StatelessWidget {
       'assets/images/hobbybtn.png', // 취미
     ];
 
+    // Filter todos for the current month
+    final filteredTodos = todos.where((todo) {
+      final todoDate = todo.date.toDate();
+      return todoDate.year == currentYear && todoDate.month == currentMonth;
+    }).toList();
+
     return categories.asMap().entries.map((entry) {
       final categoryIndex = entry.key;
       final category = entry.value;
 
-      final categoryTodos = todos.where((todo) => todo.category == category).toList();
+      final categoryTodos = filteredTodos.where((todo) => todo.category == category).toList();
       final completedCount = categoryTodos.where((todo) => todo.isCompleted).length;
       final totalCount = categoryTodos.length;
       final rate = totalCount > 0 ? completedCount / totalCount : 0.0;
@@ -222,4 +235,5 @@ class AchieveBarChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+
 
