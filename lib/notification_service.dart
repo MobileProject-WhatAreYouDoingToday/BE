@@ -37,7 +37,7 @@ class NotificationService {
     if (todo.isNotification == true) {
       tz.initializeTimeZones();
       DateTime todoDate = todo.date.toDate();
-      DateTime totime = new DateTime(todoDate.year, todoDate.month, todoDate.day, 0, 0);
+      DateTime totime = new DateTime(todoDate.year, todoDate.month, todoDate.day, todoDate.hour, todoDate.minute,0,0);
       tz.TZDateTime date = tz.TZDateTime.from(totime, tz.local);
 
       var androidDetails = AndroidNotificationDetails(
@@ -47,10 +47,16 @@ class NotificationService {
         importance: Importance.max,
       );
 
+      try {
+        await _instance._notificationPlugin.cancel(uid);
+        print("삭제성공");
+      } catch (e) {
+
+      }
       await _instance._notificationPlugin.zonedSchedule(
         uid,
+        "리마인더",
         todo.name,
-        todo.description,
         date,
         NotificationDetails(android: androidDetails),
         androidScheduleMode: AndroidScheduleMode.inexact, // 일반 알람 모드 사용
@@ -60,8 +66,9 @@ class NotificationService {
     } else {
       try {
         await _instance._notificationPlugin.cancel(uid);
+        print("삭제성공");
       } catch (e) {
-        return;
+
       }
     }
   }
