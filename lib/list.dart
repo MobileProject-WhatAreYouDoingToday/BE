@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:whatareyoudoingtoday/MainWidget.dart';
+import 'package:whatareyoudoingtoday/notification_service.dart';
 import 'auth.dart';
 import 'creation.dart';
 import 'store.dart'; // Todo 클래스를 포함한 task.dart
@@ -129,6 +130,9 @@ class _TodoListPageState extends State<TodoListPage> {
 
   void _removeTask(int index) {
     Store store = Store();
+    tasks[index].isNotification=false;
+    store.setTodo(email, tasks[index]);
+    NotificationService.showNotification(tasks[index]);
     store.removeTodo(email, tasks[index]); // Firestore에서 삭제하는 로직 추가
     setState(() {
       tasks.removeAt(index);

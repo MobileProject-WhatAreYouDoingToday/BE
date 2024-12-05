@@ -20,7 +20,7 @@ class CreationPage extends StatefulWidget {
 
 class _CreationPageState extends State<CreationPage> {
   final String email;
-  final Todo? todo;
+  Todo? todo;
   DateTime selectDay;
 
   String taskTitle = '';
@@ -66,7 +66,7 @@ class _CreationPageState extends State<CreationPage> {
     if(todo == null){
       if (taskTitle.isNotEmpty) {
         // Todo 객체 생성
-        Todo newTodo = Todo(
+          todo = Todo(
           name: taskTitle,
           category: selectedCategory != "기타" ? selectedCategory.toString() : "기타", // 카테고리 설정
           date: Timestamp.fromDate(selectedTime), // 바꾼 시간으로 설정
@@ -76,8 +76,8 @@ class _CreationPageState extends State<CreationPage> {
           description: taskMemo,
         );
 
-        print(newTodo.date);
-        List<Todo>? todoList = await Store().getSelectedDateTodoList(email, newTodo.date);
+        print(todo!.date);
+        List<Todo>? todoList = await Store().getSelectedDateTodoList(email, todo!.date);
         int lastP=0;
 
         for(int i=0;i<todoList.length;i++){
@@ -86,12 +86,13 @@ class _CreationPageState extends State<CreationPage> {
             print('라스트p는 {$lastP}');
           }
         }
-        newTodo.priority = lastP;
+        todo!.priority = lastP;
 
         // Todo 객체를 반환
-        Navigator.pop(context, {'todo': newTodo, 'selectedTime': selectedTime});
-        Store().setTodo(email, newTodo);
-        NotificationService.showNotification(newTodo);
+        Navigator.pop(context, {'todo': todo, 'selectedTime': selectedTime});
+        Store().setTodo(email, todo!);
+        await Future.delayed(Duration(seconds: 1));
+        NotificationService.showNotification(todo!);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('할 일 제목을 입력해주세요.')),
