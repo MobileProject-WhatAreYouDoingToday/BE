@@ -51,7 +51,6 @@ class NotificationService {
         await _instance._notificationPlugin.cancel(uid);
         print("삭제성공");
       } catch (e) {
-
       }
       await _instance._notificationPlugin.zonedSchedule(
         uid,
@@ -59,7 +58,7 @@ class NotificationService {
         todo.name,
         date,
         NotificationDetails(android: androidDetails),
-        androidScheduleMode: AndroidScheduleMode.inexact, // 일반 알람 모드 사용
+        androidScheduleMode: AndroidScheduleMode.exact,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       );
       print("푸시 알림 생성");
@@ -68,7 +67,6 @@ class NotificationService {
         await _instance._notificationPlugin.cancel(uid);
         print("삭제성공");
       } catch (e) {
-
       }
     }
   }
