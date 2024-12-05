@@ -9,6 +9,7 @@ class AchievePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    backgroundColor: Colors.white;
     final currentMonth = DateTime.now().month;
     final monthNames = [
       '1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'
@@ -30,6 +31,7 @@ class AchievePage extends StatelessWidget {
           width: 375,
           height: 812,
           child: Scaffold(
+            backgroundColor: Colors.white,
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
