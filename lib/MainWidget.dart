@@ -20,10 +20,11 @@ class _MainWidgetState extends State<MainWidget> {
   final Auth auth;
   String email = "";
   List<Todo> todoList = [];
+  List<Todo> todayList = [];
   late double progressValue = 0.0;
   late int progressPercentage = 0;
   Store store = Store();
-
+  DateTime now = DateTime.now();
   _MainWidgetState(this.auth);
 
   @override
@@ -31,25 +32,37 @@ class _MainWidgetState extends State<MainWidget> {
     super.initState();
     email = widget.auth.userCredential!.user!.email!;
     getTodoList();
+    now = DateTime.now();
   }
 
   Future<void> getTodoList() async {
-    todoList = (await store.getTodoList(email))!;
+    todoList = (await store.getTodoList(email));
+    for(int i =0;i<todoList.length;i++){
+      DateTime today = todoList[i].date.toDate();
+      if(today.year == now.year && today.month == now.month && today.day == now.day){
+        todayList.add(todoList[i]);
+      }
+    }
 
     setState(() {
-      if (todoList == null || todoList.isEmpty) {
+      if (todayList == null || todayList.isEmpty) {
         progressValue = 0.0;
         progressPercentage = (progressValue * 100).round(); // 퍼센트로 변환
       } else {
-        todoList.sort((a, b) => a.priority.compareTo(b.priority));
+        todayList.sort((a, b) => a.priority.compareTo(b.priority));
 
         int checked = 0;
-        for (int i = 0; i < todoList.length; i++) {
-          if (todoList[i].isCompleted) {
+        for (int i = 0; i < todayList.length; i++) {
+          if(todayList[i].isCompleted){
             checked++;
           }
         }
-        progressValue = checked / todoList.length;
+
+        if(todayList.length!=0){
+          progressValue = checked / todayList.length;
+        } else {
+          progressValue = 0;
+        }
         progressPercentage = (progressValue * 100).round(); // 퍼센트로 변환
       }
     });
@@ -57,7 +70,6 @@ class _MainWidgetState extends State<MainWidget> {
 
   @override
   Widget build(BuildContext context) {
-    DateTime now = DateTime.now();
     DateTime today = DateTime(now.year, now.month, now.day);
     Timestamp timestamp = Timestamp.fromDate(today);
 
@@ -176,22 +188,22 @@ class _MainWidgetState extends State<MainWidget> {
             color: Colors.grey.shade200,
             padding: EdgeInsets.all(25),
             height: 70, // 고정 높이 설정
-            child: todoList.isNotEmpty && !todoList.every((todo) => todo.isCompleted)
+            child: todayList.isNotEmpty && !todayList.every((todo) => todo.isCompleted)
                 ? Row(
                 children: [
                   // 체크박스가 체크된 상태를 나타내는 이미지
                 GestureDetector(
                 onTap: () async {
-                  if (todoList.isNotEmpty) {
+                  if (todayList.isNotEmpty) {
                     setState(() {
                     // 체크 상태를 변경
-                    todoList[todoList.length - 1].isCompleted =
-                    !todoList[todoList.length - 1].isCompleted;
+                    todayList[todayList.length - 1].isCompleted =
+                    !todayList[todayList.length - 1].isCompleted;
                     });
 
 
                     // 체크 먼저 업데이트
-                    await store.setTodo(email, todoList[todoList.length - 1]);
+                    await store.setTodo(email, todayList[todayList.length - 1]);
                     // 전체 priority 업데이트
                     for(var todo in todoList){
                       todo.priority++;
@@ -203,7 +215,7 @@ class _MainWidgetState extends State<MainWidget> {
                       .collection("users")
                       .doc(email)
                       .collection("todo")
-                      .doc(todoList[todoList.length - 1].id); // Todo의 ID로 참조
+                      .doc(todayList[todayList.length - 1].id); // Todo의 ID로 참조
 
                     await ref.update({'priority': 0}); // 우선순위를 0으로 설정
 
@@ -212,7 +224,7 @@ class _MainWidgetState extends State<MainWidget> {
                   }
                 },
             child: Image.asset(
-              todoList[todoList.length - 1].isCompleted
+              todayList[todayList.length - 1].isCompleted
                   ? 'assets/images/checkbox.png' // 체크된 상태 이미지
                   : 'assets/images/uncheckbox.png', // 체크 해제 상태 이미지
               width: 30,
@@ -221,7 +233,7 @@ class _MainWidgetState extends State<MainWidget> {
           ),
                   SizedBox(width: 10),
                   Text(
-                    todoList[todoList.length-1].name,
+                    todayList[todayList.length - 1].name,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.black,
