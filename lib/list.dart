@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:whatareyoudoingtoday/MainWidget.dart';
-import 'package:whatareyoudoingtoday/notification_service.dart';
+import 'package:TodayTodo/MainWidget.dart';
+import 'package:TodayTodo/notification_service.dart';
 import 'auth.dart';
 import 'creation.dart';
 import 'store.dart'; // Todo 클래스를 포함한 task.dart
