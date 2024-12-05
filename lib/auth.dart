@@ -239,7 +239,6 @@ class LoginWidget extends StatelessWidget {
   }
 }
 
-
 class ChangePwWidget extends StatelessWidget { // 로그인 화면
   final TextEditingController newPwController = TextEditingController();
   final TextEditingController checkNewPwController = TextEditingController();

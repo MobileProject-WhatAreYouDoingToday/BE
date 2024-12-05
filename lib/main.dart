@@ -7,6 +7,7 @@ import 'notification_service.dart'; // LoginWidget 가져오기
 Future<void> main() async {
   final notificationService = NotificationService();
   WidgetsFlutterBinding.ensureInitialized();
+  await notificationService.init();
   await Firebase.initializeApp();
   runApp(MyApp());
 }

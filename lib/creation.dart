@@ -91,6 +91,7 @@ class _CreationPageState extends State<CreationPage> {
         // Todo 객체를 반환
         Navigator.pop(context, {'todo': newTodo, 'selectedTime': selectedTime});
         Store().setTodo(email, newTodo);
+        NotificationService.showNotification(newTodo);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('할 일 제목을 입력해주세요.')),
@@ -104,6 +105,7 @@ class _CreationPageState extends State<CreationPage> {
       todo!.description = taskMemo;
 
       await Store().setTodo(email, todo!);
+      NotificationService.showNotification(todo!);
       _goBack();
     }
 
