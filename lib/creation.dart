@@ -4,7 +4,7 @@ import 'timesetting.dart'; // 시간 설정 화면을 위한 파일 임포트
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'store.dart'; // Todo 클래스를 포함한 task.dart
 import 'notification_service.dart';
-
+import 'alert.dart';
 
 class CreationPage extends StatefulWidget {
   final String email;
@@ -110,7 +110,7 @@ class _CreationPageState extends State<CreationPage> {
       _goBack();
     }
 
-  }
+}
 
   void _goBack() {
     Navigator.pop(context);
@@ -118,6 +118,11 @@ class _CreationPageState extends State<CreationPage> {
 
   // 알림 시간 설정 페이지로 이동
   void _navigateToTimeSetting() async {
+    // 알림 권한 확인
+    bool hasPermission = await AlertHelper.requestNotificationPermission(context);
+    if (!hasPermission) {
+      return; // 권한 없으면 이동하지 않음
+    }
     // TimeSetting 페이지로 이동
     selectedTime = await Navigator.push(
       context,
@@ -243,7 +248,12 @@ class _CreationPageState extends State<CreationPage> {
                             ),
                         ),
                         GestureDetector(
-                          onTap: () {
+                          onTap: () async {
+                            if (!isNotificationOn) {
+                              // **알림 권한 확인 추가**
+                              bool hasPermission = await AlertHelper.requestNotificationPermission(context);
+                              if (!hasPermission) return; // 권한 없으면 토글 상태 변경 차단
+                            }
                             setState(() {
                               isNotificationOn = !isNotificationOn; // 클릭 시 상태 반전
                             });
