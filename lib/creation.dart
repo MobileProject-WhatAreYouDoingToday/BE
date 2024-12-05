@@ -22,6 +22,9 @@ class _CreationPageState extends State<CreationPage> { // 할 일 생성 및 수
   Todo? todo;
   DateTime selectDay;
 
+
+  _CreationPageState(this.email, this.todo, this.selectDay); // list에서 날짜 정보를 가져와야 함
+
   String taskTitle = '';
   String taskMemo = '';
   bool isNotificationOn = false;
@@ -32,24 +35,21 @@ class _CreationPageState extends State<CreationPage> { // 할 일 생성 및 수
   TextEditingController memoController = TextEditingController();
 
 
-  _CreationPageState(this.email, this.todo, this.selectDay); // list에서 날짜 정보를 가져와야 함
-
-  @override
   @override
   void initState() {
     super.initState();
     if (todo != null) {
-      taskTitle = todo!.name;
-      nameController.text = todo!.name;
-      taskMemo = todo!.description;
-      memoController.text = todo!.description;
-      isNotificationOn = todo!.isNotification;
-      selectedCategory = todo!.category;
 
       // todo의 date가 null인 경우 그냥 현재 시간으로 하는거임
       try {
         print("선택 날짜 : ${selectDay}");
         selectedTime = todo!.date.toDate();
+        taskTitle = todo!.name;
+        nameController.text = todo!.name;
+        taskMemo = todo!.description;
+        memoController.text = todo!.description;
+        isNotificationOn = todo!.isNotification;
+        selectedCategory = todo!.category;
       } catch (e) {
         print("선택 날짜 : ${selectDay}");
         selectedTime = selectDay;
@@ -65,7 +65,7 @@ class _CreationPageState extends State<CreationPage> { // 할 일 생성 및 수
     if(todo == null){
       if (taskTitle.isNotEmpty) {
         // Todo 객체 생성
-          todo = Todo(
+        todo = Todo(
           name: taskTitle,
           category: selectedCategory != "기타" ? selectedCategory.toString() : "기타", // 카테고리 설정
           date: Timestamp.fromDate(selectedTime), // 바꾼 시간으로 설정
@@ -88,10 +88,10 @@ class _CreationPageState extends State<CreationPage> { // 할 일 생성 및 수
         todo!.priority = lastP;
 
         // Todo 객체를 반환
-        Navigator.pop(context, {'todo': todo, 'selectedTime': selectedTime});
+        Navigator.pop(context, {'todo': todo});
         Store().setTodo(email, todo!);
         await Future.delayed(Duration(seconds: 1));
-        NotificationService.showNotification(todo!);
+        NotificationService.showNotification(todo!, super.context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('할 일 제목을 입력해주세요.')),
@@ -105,11 +105,11 @@ class _CreationPageState extends State<CreationPage> { // 할 일 생성 및 수
       todo!.description = taskMemo;
 
       await Store().setTodo(email, todo!);
-      NotificationService.showNotification(todo!);
-      _goBack();
+      NotificationService.showNotification(todo!, super.context);
+      Navigator.pop(context, {'todo': todo});
     }
 
-}
+  }
 
   void _goBack() {
     Navigator.pop(context);
@@ -132,6 +132,17 @@ class _CreationPageState extends State<CreationPage> { // 할 일 생성 및 수
 
     });
 
+  }
+
+  String alertMessage() {
+    String message="";
+    if(nameController.text.isEmpty){
+      message="할 일 제목을 입력해주세요";
+    } else if(isNotificationOn&&selectedTime.isBefore(DateTime.now())){
+      message="알람 시간을 확인해주세요";
+    }
+
+    return message;
   }
 
   @override
@@ -180,63 +191,63 @@ class _CreationPageState extends State<CreationPage> { // 할 일 생성 및 수
         ],
       ),
       body: SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(left: 16.0),
-                  child: Text(
-                    '할 일 제목을 입력해주세요',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Color(0xFFF95A2C),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(left: 16.0),
+                    child: Text(
+                      alertMessage(),
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Color(0xFFF95A2C),
+                      ),
                     ),
                   ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(top: 16.0),
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/images/TextfieldName.png'),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  child: TextField(
-                    controller: nameController,
-                    onChanged: (value) {
-                      setState(() {
-                        taskTitle = value;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: '할 일 제목',
-                      fillColor: Colors.transparent,
-                      filled: true,
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.only(left: 25.0),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                GestureDetector(
-                  onTap: _navigateToTimeSetting, // 알림 시간 영역 클릭 시 시간 설정
-                  child: Container(
+                  Container(
+                    margin: EdgeInsets.only(top: 16.0),
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage('assets/images/timesettingBar.png'),
-                        fit: BoxFit.fitWidth,
+                        image: AssetImage('assets/images/TextfieldName.png'),
+                        fit: BoxFit.cover,
                       ),
-                      borderRadius: BorderRadius.circular(8),
                     ),
-                    padding: EdgeInsets.symmetric(vertical: 22, horizontal: 30),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.only(left: 100.0),
+                    child: TextField(
+                      controller: nameController,
+                      onChanged: (value) {
+                        setState(() {
+                          taskTitle = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: '할 일 제목',
+                        fillColor: Colors.transparent,
+                        filled: true,
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.only(left: 25.0),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: _navigateToTimeSetting, // 알림 시간 영역 클릭 시 시간 설정
+                    child: Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/images/timesettingBar.png'),
+                          fit: BoxFit.fitWidth,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 22, horizontal: 30),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(left: 100.0),
                             child: Text(
                               '${selectedTime.hour.toString().padLeft(2, '0')} : ${selectedTime.minute.toString().padLeft(2, '0')}',
                               style: TextStyle(
@@ -245,89 +256,89 @@ class _CreationPageState extends State<CreationPage> { // 할 일 생성 및 수
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-                            if (!isNotificationOn) {
-                              // **알림 권한 확인 추가**
-                              bool hasPermission = await AlertHelper.requestNotificationPermission(context);
-                              if (!hasPermission) return; // 권한 없으면 토글 상태 변경 차단
-                            }
-                            setState(() {
-                              isNotificationOn = !isNotificationOn; // 클릭 시 상태 반전
-                            });
-                          },
-                          child: Image.asset(
-                            isNotificationOn ? 'assets/images/toggleOn.png' : 'assets/images/toggleOff.png',
-                            width: 50,
-                            height: 50,
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              if (!isNotificationOn) {
+                                // **알림 권한 확인 추가**
+                                bool hasPermission = await AlertHelper.requestNotificationPermission(context);
+                                if (!hasPermission) return; // 권한 없으면 토글 상태 변경 차단
+                              }
+                              setState(() {
+                                isNotificationOn = !isNotificationOn; // 클릭 시 상태 반전
+                              });
+                            },
+                            child: Image.asset(
+                              isNotificationOn ? 'assets/images/toggleOn.png' : 'assets/images/toggleOff.png',
+                              width: 50,
+                              height: 50,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: EdgeInsets.only(left: 16.0),
+                    child: Column(
+                      children: [
+                        Text(
+                          '카테고리를 선택해주세요',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
+                        SizedBox(height: 20),
                       ],
                     ),
                   ),
-                ),
-                SizedBox(height: 20),
-                Padding(
-                  padding: EdgeInsets.only(left: 16.0),
-                  child: Column(
-                    children: [
-                      Text(
-                        '카테고리를 선택해주세요',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  Container(
+                    padding: EdgeInsets.only(left: 7.0, right: 7.0),
+                    child: Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: [
+                        _buildCategoryButton(0, '운동', 'assets/images/healthbtn.png', buttonWidth),
+                        _buildCategoryButton(1, '독서', 'assets/images/readingbtn.png', buttonWidth),
+                        _buildCategoryButton(2, '공부', 'assets/images/studybtn.png', buttonWidth),
+                        _buildCategoryButton(3, '취미', 'assets/images/hobbybtn.png', buttonWidth),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/images/TextArea.png'),
+                        fit: BoxFit.cover,
                       ),
-                      SizedBox(height: 20),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.only(left: 7.0, right: 7.0),
-                  child: Wrap(
-                    spacing: 8.0,
-                    runSpacing: 8.0,
-                    children: [
-                      _buildCategoryButton(0, '운동', 'assets/images/healthbtn.png', buttonWidth),
-                      _buildCategoryButton(1, '독서', 'assets/images/readingbtn.png', buttonWidth),
-                      _buildCategoryButton(2, '공부', 'assets/images/studybtn.png', buttonWidth),
-                      _buildCategoryButton(3, '취미', 'assets/images/hobbybtn.png', buttonWidth),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 20),
-                Container(
-                  height: 200,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/images/TextArea.png'),
-                      fit: BoxFit.cover,
+                    ),
+                    child: TextField(
+                      controller: memoController,
+                      maxLines: 4,
+                      onChanged: (value) {
+                        setState(() {
+                          taskMemo = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: '할 일을 적어주세요',
+                        border: InputBorder.none,
+                        filled: true,
+                        fillColor: Colors.transparent,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 27.0, vertical: 8.0),
+                      ),
                     ),
                   ),
-                  child: TextField(
-                    controller: memoController,
-                    maxLines: 4,
-                    onChanged: (value) {
-                      setState(() {
-                        taskMemo = value;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: '할 일을 적어주세요',
-                      border: InputBorder.none,
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 27.0, vertical: 8.0),
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        )
-          ),
+          )
+      ),
     );
   }
 

@@ -16,7 +16,6 @@ class _TimeSettingState extends State<TimeSetting> {
   final DateTime selectedTime;
 
   _TimeSettingState(this.selectedTime);
-  int? reminderTime;
 
   @override
   Widget build(BuildContext context) {
@@ -80,41 +79,6 @@ class _TimeSettingState extends State<TimeSetting> {
               ),
             ),
             SizedBox(height: 40),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '시작 전',
-                      style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold, // 텍스트를 굵게 설정
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(width: 10), // Text와 버튼 사이의 간격
-                _buildReminderButton(
-                    5,
-                    'assets/images/5minute.png',
-                    'assets/images/5min.png' // 선택된 이미지 경로
-                ), // 5분 버튼
-                SizedBox(width: 10),
-                _buildReminderButton(
-                    10,
-                    'assets/images/10minute.png',
-                    'assets/images/10min.png' // 선택된 이미지 경로
-                ), // 10분 버튼
-                SizedBox(width: 10),
-                _buildReminderButton(
-                    30,
-                    'assets/images/30minute.png',
-                    'assets/images/30min.png' // 선택된 이미지 경로
-                ), // 30분 버튼
-              ],
-            ),
             SizedBox(height: 50),
             // 저장 버튼
             GestureDetector(
@@ -135,28 +99,5 @@ class _TimeSettingState extends State<TimeSetting> {
         ),
       ),
     );
-  }
-
-  Widget _buildReminderButton(int minutes, String imagePath, String selectedImagePath) {
-    return InkWell(
-      onTap: () => setReminder(minutes, selectedImagePath), // 클릭 시 알림 시간 설정
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Image.asset(
-            reminderTime == minutes ? selectedImagePath : imagePath, // 선택된 이미지 사용
-            width: 70.0, // 원하는 너비
-            height: 50.0, // 원하는 높이 (조정 가능)
-          ),
-          SizedBox(height: 5), // 아이콘과 텍스트 사이의 간격
-        ],
-      ),
-    );
-  }
-
-  void setReminder(int minutes, String imagePath) {
-    setState(() {
-      reminderTime = minutes; // 알림 시간 설정
-    });
   }
 }

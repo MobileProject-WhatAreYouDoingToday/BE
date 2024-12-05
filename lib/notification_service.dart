@@ -1,4 +1,5 @@
 import 'package:crypto/crypto.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:TodayTodo/store.dart';
 import 'dart:convert'; // todo id 정수로 치환하기 위해
@@ -17,7 +18,7 @@ class NotificationService {
 
   Future<void> init() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@drawable/logo'); // 아이콘 경로 수정
+    AndroidInitializationSettings('@mipmap/ic_launcher'); // 아이콘 경로 수정
 
     const InitializationSettings initializationSettings =
     InitializationSettings(android: initializationSettingsAndroid);
@@ -25,7 +26,8 @@ class NotificationService {
     await _notificationPlugin.initialize(initializationSettings);
   }
 
-  static Future<void> showNotification(Todo todo) async {
+
+  static Future<void> showNotification(Todo todo, context) async {
     // todo id int로 바꿔버리기
     var bytes = utf8.encode(todo.id!);
     var digest = sha1.convert(bytes);
@@ -36,6 +38,22 @@ class NotificationService {
       DateTime todoDate = todo.date.toDate();
       DateTime totime = new DateTime(todoDate.year, todoDate.month, todoDate.day, todoDate.hour, todoDate.minute,0,0);
       tz.TZDateTime date = tz.TZDateTime.from(totime, tz.local);
+
+      if(DateTime.now().isAfter(totime)){
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('입력 오류'),
+            content: Text('모든 정보를 입력해야 합니다.', style: TextStyle(fontSize: 18)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('확인'),
+              ),
+            ],
+          ),
+        );
+      }
 
       var androidDetails = AndroidNotificationDetails(
         'your_channel_id',
@@ -51,7 +69,7 @@ class NotificationService {
       }
       await _instance._notificationPlugin.zonedSchedule(
         uid,
-        "오늘 뭐해?",
+        "",
         "${todo.name} 할 시간입니다.",
         date,
         NotificationDetails(android: androidDetails),
