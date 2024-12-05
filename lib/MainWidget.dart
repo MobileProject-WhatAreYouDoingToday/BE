@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:whatareyoudoingtoday/store.dart';
+import 'package:TodayTodo/store.dart';
 
 import 'auth.dart';
 import 'calendar.dart';

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'MainWidget.dart';
 import 'store.dart';
 
@@ -84,7 +85,7 @@ class LoginWidget extends StatelessWidget {
             backgroundColor: Colors.white,
             leading: IconButton(
               onPressed: () {
-                Navigator.pop(context);
+                SystemNavigator.pop();
               },
               icon: Image.asset("assets/images/closebutton.png"),
             ),
