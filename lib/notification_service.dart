@@ -36,7 +36,9 @@ class NotificationService {
 
     if (todo.isNotification == true) {
       tz.initializeTimeZones();
-      tz.TZDateTime date = tz.TZDateTime.from(todo.date.toDate(), tz.local);
+      DateTime todoDate = todo.date.toDate();
+      DateTime totime = new DateTime(todoDate.year, todoDate.month, todoDate.day, 0, 0);
+      tz.TZDateTime date = tz.TZDateTime.from(totime, tz.local);
 
       var androidDetails = AndroidNotificationDetails(
         'your_channel_id', // 채널 ID 수정
