@@ -1,6 +1,6 @@
 import 'package:crypto/crypto.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:whatareyoudoingtoday/store.dart';
+import 'package:TodayTodo/store.dart';
 import 'dart:convert'; // todo id 정수로 치환하기 위해
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
