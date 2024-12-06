@@ -1,9 +1,7 @@
 # whatareyoudoingtoday
 
-## **BE**
-
-firebase와 플러터의 연동을 통해서 수행할 수 있는 기능들을 구현하는 레포지토리
-
+### 개발환경
+IDE: Android studio
 ### 사용한 프론트 기술
 1. 프레임워크: flutter
 2. 언어:Dart
