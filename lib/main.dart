@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
         body: Builder(
           builder: (context) {
             AlertHelper.listenToConnectivityChanges(context); // 네트워크 상태 감지 시작
+            AlertHelper.requestNotificationPermission(context);
             return LoginWidget(); // 첫 화면으로 LoginWidget 설정
           },
         ),
