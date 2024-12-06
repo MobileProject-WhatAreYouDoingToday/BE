@@ -141,7 +141,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MainWidget(auth: auth)),
+                    MaterialPageRoute(builder: (context) => MainWidget(auth: auth, first: false,)),
                   );
                 },
                 child: Image.asset("assets/images/chart.png"),

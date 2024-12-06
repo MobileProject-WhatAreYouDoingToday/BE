@@ -141,9 +141,9 @@ class LoginWidget extends StatelessWidget {
                       if (loginSuccess) {
                         // 로그인 성공: 메인 화면으로 이동
                         errorMessage.value = null; // 에러 메시지 초기화
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => MainWidget(auth: authe)),
+                          MaterialPageRoute(builder: (context) => MainWidget(auth: authe, first : true)),
                         );
                       } else {
                         // 로그인 실패: 에러 메시지 표시

@@ -44,14 +44,10 @@ class _TodoListPageState extends State<TodoListPage> {
     Store store = Store();
     List<Todo>? todoList = await store.getTodoList(email);
 
-    print("todolist 크기 = ${todoList.length}");
-
-    if (todoList != null) {
-      // tasks 리스트 초기화
-      setState(() {
-        tasks.clear(); // 기존의 tasks 리스트를 초기화
-        isMemoVisible = List<bool>.filled(todoList.length, false).toList(); // 고정 길이 리스트를 가변 길이 리스트로 변환
-      });
+    // tasks 리스트 초기화
+    setState(() {
+      tasks.clear(); // 기존의 tasks 리스트를 초기화
+      isMemoVisible = List<bool>.filled(todoList.length, false).toList(); // 고정 길이 리스트를 가변 길이 리스트로 변환
 
       for (int i = todoList.length-1; i >= 0; i--) {
         DateTime listDate = todoList[i].date.toDate();
@@ -61,7 +57,7 @@ class _TodoListPageState extends State<TodoListPage> {
           _addTask(todoList[i]);
         }
       }
-    }
+    });
   }
 
 
@@ -102,7 +98,6 @@ class _TodoListPageState extends State<TodoListPage> {
     setState(() {
       tasks.add(task);
       isMemoVisible.add(false);
-      print(task.name + '추가됨');
     });
   }
 
@@ -113,17 +108,16 @@ class _TodoListPageState extends State<TodoListPage> {
     );
 
     if (result != null && result['todo'] != null) {
-      setState(() {
-        tasks.insert(0,result['todo']); // 생성된 Todo를 리스트에 추가
-        isMemoVisible.add(false);
-      });
+      tasks.insert(0,result['todo']); // 생성된 Todo를 리스트에 추가
+      isMemoVisible.add(false);
+      _loadTasks();
     }}
 
   void _navigateToProcessPage() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MainWidget(auth: auth),
+        builder: (context) => MainWidget(auth: auth, first: false,),
       ),
     );
   }
@@ -132,7 +126,7 @@ class _TodoListPageState extends State<TodoListPage> {
     Store store = Store();
     tasks[index].isNotification=false;
     store.setTodo(email, tasks[index]);
-    NotificationService.showNotification(tasks[index]);
+    NotificationService.showNotification(tasks[index], context);
     store.removeTodo(email, tasks[index]); // Firestore에서 삭제하는 로직 추가
     setState(() {
       tasks.removeAt(index);
@@ -296,12 +290,12 @@ class _TodoListPageState extends State<TodoListPage> {
                     ),
                     direction: DismissDirection.endToStart,
                     onDismissed: (direction) {
-                      _removeTask(index);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('${tasks[index].name}이(가) 삭제되었습니다.'),
                         ),
                       );
+                      _removeTask(index);
                     },
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,12 +317,32 @@ class _TodoListPageState extends State<TodoListPage> {
                             SizedBox(width: 20),
                             Expanded(
                               child: GestureDetector(
-                                onTap: () {
-                                  var result = Navigator.push(context,
-                                    MaterialPageRoute(builder: (context) => CreationPage(email: email, todo: tasks[index], selectDay: tasks[index].date.toDate(),),));
+                                onTap: () async {
+                                  var result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CreationPage(
+                                        email: email,
+                                        todo: tasks[index],
+                                        selectDay: tasks[index].date.toDate(),
+                                      ),
+                                    ),
+                                  );
 
-                                  if(result!=null){
-                                    _loadTasks();
+                                  if (result != null) {
+                                    // 전달된 데이터를 사용해 tasks 업데이트
+                                    var updatedTodo = result['todo'];
+
+                                    setState(() {
+                                      int taskIndex = tasks.indexWhere((task) => task.id == updatedTodo.id);
+                                      if (taskIndex != -1) {
+                                        tasks[taskIndex] = updatedTodo;
+                                      } else {
+                                        _addTask(updatedTodo);
+                                      }
+                                    });
+
+                                    await _loadTasks();
                                   }
                                 },
                                 child: Text(
