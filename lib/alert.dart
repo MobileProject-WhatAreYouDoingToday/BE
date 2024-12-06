@@ -8,10 +8,8 @@ class AlertHelper {
 
   // 알림 권한 요청 및 확인
   static Future<bool> requestNotificationPermission(BuildContext context) async {
-    final status = await Permission.notification.request();
-    if (status.isGranted) {
-      return true; // 권한이 허용됨
-    }
+    final status = await Permission.notification.status;
+
     if (status.isDenied && context.mounted) {
       _showPermissionDialog(context);
     }
