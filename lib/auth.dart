@@ -195,7 +195,7 @@ class LoginWidget extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'ID / PW 잊으셨나요?',
+                        'PW를 잊으셨나요?',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -208,7 +208,7 @@ class LoginWidget extends StatelessWidget {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => WillChangePwWidget()));
                         },
                         child: Text(
-                          ' ID / PW 찾기',
+                          ' PW 재설정',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
